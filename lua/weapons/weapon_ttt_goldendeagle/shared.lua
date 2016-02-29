@@ -78,7 +78,8 @@ function SWEP:PrimaryAttack()
 		self:SetNextPrimaryFire(CurTime() + self.Primary.Delay)
 		
 		self.Weapon:SendWeaponAnim(ACT_VM_PRIMARYATTACK)
-		self.Weapon:EmitSound(self.Primary.Sound)
+		-- If the sound is emitted on the Weapon, the sound will stop on self.Owner:Kill(), emit it on the Owner instead
+		self.Owner:EmitSound(self.Primary.Sound)
 		self:TakePrimaryAmmo(1)
 		
 		local tr = util.TraceLine(util.GetPlayerTrace(self.Owner))
