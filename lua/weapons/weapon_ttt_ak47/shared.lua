@@ -1,6 +1,6 @@
 if SERVER then
-   AddCSLuaFile( "shared.lua" )
-   resource.AddFile( "materials/vgui/ttt/icon_ak47.vmt" )
+	AddCSLuaFile()
+	resource.AddWorkshop("253736148")
 end
 
 if CLIENT then
@@ -12,7 +12,7 @@ end
 -- Always derive from weapon_tttbase
 SWEP.Base = "weapon_tttbase"
 
--- Standard GMod values
+--- Default GMod values ---
 SWEP.HoldType = "ar2"
 
 SWEP.Primary.Ammo = "SMG1"
@@ -24,27 +24,27 @@ SWEP.Primary.Automatic = true
 SWEP.Primary.ClipSize = 30
 SWEP.Primary.ClipMax = 60
 SWEP.Primary.DefaultClip = 30
-SWEP.Primary.Sound = Sound( "Weapon_AK47.Single" )
+SWEP.Primary.Sound = Sound("Weapon_AK47.Single")
 
--- Model settings
+--- Model settings ---
 SWEP.UseHands = true
 SWEP.ViewModelFlip = false
 SWEP.ViewModelFOV = 50
-SWEP.ViewModel = "models/weapons/cstrike/c_rif_ak47.mdl"
-SWEP.WorldModel = "models/weapons/w_rif_ak47.mdl"
+SWEP.ViewModel = Model("models/weapons/cstrike/c_rif_ak47.mdl")
+SWEP.WorldModel = Model("models/weapons/w_rif_ak47.mdl")
 
-SWEP.IronSightsPos = Vector( -6.518, -4.646, 2.134 )
-SWEP.IronSightsAng = Vector( 2.737, 0.158, 0 )
+SWEP.IronSightsPos = Vector(-6.518, -4.646, 2.134)
+SWEP.IronSightsAng = Vector(2.737, 0.158, 0)
 
---- TTT config values
+--- TTT config values ---
 
 -- Kind specifies the category this weapon is in. Players can only carry one of
 -- each. Can be: WEAPON_... MELEE, PISTOL, HEAVY, NADE, CARRY, EQUIP1, EQUIP2 or ROLE.
 -- Matching SWEP.Slot values: 0      1       2     3      4      6       7        8
 SWEP.Kind = WEAPON_EQUIP1
 
--- If AutoSpawnable is true and SWEP.Kind is not WEAPON_EQUIP1/2, then this gun can
--- be spawned as a random weapon.
+-- If AutoSpawnable is true and SWEP.Kind is not WEAPON_EQUIP1/2, 
+-- then this gun can be spawned as a random weapon.
 SWEP.AutoSpawnable = false
 
 -- The AmmoEnt is the ammo entity that can be picked up when carrying this gun.
@@ -53,10 +53,6 @@ SWEP.AmmoEnt = "item_ammo_smg1_ttt"
 -- CanBuy is a table of ROLE_* entries like ROLE_TRAITOR and ROLE_DETECTIVE. If
 -- a role is in this table, those players can buy this.
 SWEP.CanBuy = { ROLE_TRAITOR }
-
--- InLoadoutFor is a table of ROLE_* entries that specifies which roles should
--- receive this weapon as soon as the round starts. In this case, none.
-SWEP.InLoadoutFor = { nil }
 
 -- If LimitedStock is true, you can only buy one per round.
 SWEP.LimitedStock = true
@@ -72,8 +68,8 @@ SWEP.NoSights = false
 
 -- Equipment menu information is only needed on the client
 if CLIENT then
-   SWEP.EquipMenuData = {
-      type = "item_weapon",
-      desc = "Very high damage assault rifle.\n\nHas very high recoil."
-   };
+	SWEP.EquipMenuData = {
+		type = "item_weapon",
+		desc = "Very high damage assault rifle.\n\nHas very high recoil."
+	};
 end

@@ -1,12 +1,12 @@
 if SERVER then
 	AddCSLuaFile()
-	resource.AddWorkshop("253736514")
+	resource.AddWorkshop("635030422")
 end
 
 if CLIENT then
-   SWEP.PrintName = "AWP"
-   SWEP.Slot = 6
-   SWEP.Icon = "vgui/ttt/icon_awp"
+   SWEP.PrintName = "SG550"
+   SWEP.Slot = 2
+   SWEP.Icon = "vgui/ttt/icon_sg550"
 end
 
 -- Always derive from weapon_tttbase
@@ -15,24 +15,25 @@ SWEP.Base = "weapon_tttbase"
 --- Default GMod values ---
 SWEP.HoldType = "ar2"
 
-SWEP.Primary.Ammo = "none"
-SWEP.Primary.Delay = 2
-SWEP.Primary.Recoil = 10
-SWEP.Primary.Cone = 0.001
-SWEP.Primary.Damage = 101
-SWEP.Primary.Automatic = false
-SWEP.Primary.ClipSize = 2
-SWEP.Primary.DefaultClip = 2
-SWEP.Primary.Sound = Sound("Weapon_AWP.Single")
+SWEP.Primary.Ammo = "357"
+SWEP.Primary.Delay = 0.5
+SWEP.Primary.Recoil = 4
+SWEP.Primary.Cone = 0.006
+SWEP.Primary.Damage = 40
+SWEP.Primary.Automatic = true
+SWEP.Primary.ClipSize = 20
+SWEP.Primary.ClipMax = 40
+SWEP.Primary.DefaultClip = 20
+SWEP.Primary.Sound = Sound("Weapon_SG550.Single")
 SWEP.Secondary.Sound = Sound("Default.Zoom")
-SWEP.HeadshotMultiplier = 2
+SWEP.HeadshotMultiplier = 4
 
 --- Model settings ---
 SWEP.UseHands = true
 SWEP.ViewModelFlip = false
-SWEP.ViewModelFOV = 64
-SWEP.ViewModel = Model("models/weapons/cstrike/c_snip_awp.mdl")
-SWEP.WorldModel = Model("models/weapons/w_snip_awp.mdl")
+SWEP.ViewModelFOV = 60
+SWEP.ViewModel = Model("models/weapons/cstrike/c_snip_sg550.mdl")
+SWEP.WorldModel = Model("models/weapons/w_snip_sg550.mdl")
 
 SWEP.IronSightsPos = Vector(5, -15, -2)
 SWEP.IronSightsAng = Vector(2.6, 1.37, 3.5)
@@ -42,35 +43,23 @@ SWEP.IronSightsAng = Vector(2.6, 1.37, 3.5)
 -- Kind specifies the category this weapon is in. Players can only carry one of
 -- each. Can be: WEAPON_... MELEE, PISTOL, HEAVY, NADE, CARRY, EQUIP1, EQUIP2 or ROLE.
 -- Matching SWEP.Slot values: 0      1       2     3      4      6       7        8
-SWEP.Kind = WEAPON_EQUIP1
+SWEP.Kind = WEAPON_HEAVY
 
 -- If AutoSpawnable is true and SWEP.Kind is not WEAPON_EQUIP1/2, 
 -- then this gun can be spawned as a random weapon.
-SWEP.AutoSpawnable = false
+SWEP.AutoSpawnable = true
 
--- CanBuy is a table of ROLE_* entries like ROLE_TRAITOR and ROLE_DETECTIVE. If
--- a role is in this table, those players can buy this.
-SWEP.CanBuy = { ROLE_TRAITOR }
-
--- If LimitedStock is true, you can only buy one per round.
-SWEP.LimitedStock = true
+-- The AmmoEnt is the ammo entity that can be picked up when carrying this gun.
+SWEP.AmmoEnt = "item_ammo_357_ttt"
 
 -- If AllowDrop is false, players can't manually drop the gun with Q
 SWEP.AllowDrop = true
 
 -- If IsSilent is true, victims will not scream upon death.
-SWEP.IsSilent = false
+SWEP.IsSilent = true
 
 -- If NoSights is true, the weapon won't have ironsights
 SWEP.NoSights = false
-
--- Equipment menu information is only needed on the client
-if CLIENT then
-	SWEP.EquipMenuData = {
-		type = "item_weapon",
-		desc = "AWP Sniper Rifle.\n\nOnly has two shots."
-	};
-end
 
 
 -- Add some zoom to the scope for this gun
