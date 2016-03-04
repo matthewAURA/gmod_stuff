@@ -1,5 +1,5 @@
 "VertexLitGeneric"
 {
-    "$baseTexture" "models\weapons\v_models\powerdeagle\dot2"
-    "$additive" 1
+	"$baseTexture" "models/weapons/v_models/powerdeagle/dot2"
+	"$additive" 1
 }

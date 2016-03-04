@@ -1,21 +1,21 @@
+--- Author informations ---
+SWEP.Author = "Zaratusa"
+SWEP.Contact = "http://steamcommunity.com/profiles/76561198032479768"
+
 if SERVER then
 	AddCSLuaFile()
 	resource.AddWorkshop("634300147")
-end
-
-if CLIENT then
-   SWEP.PrintName = "Dual Elites"
-   SWEP.Slot = 1
-   SWEP.Icon = "vgui/ttt/icon_dualelites"
+elseif CLIENT then
+	SWEP.PrintName = "Dual Elites"
+	SWEP.Slot = 1
+	SWEP.Icon = "vgui/ttt/icon_dualelites"
 end
 
 -- Always derive from weapon_tttbase
 SWEP.Base = "weapon_tttbase"
 
 --- Default GMod values ---
-SWEP.HoldType = "duel"
-
-SWEP.Primary.Ammo = "Pistol"
+SWEP.Primary.Ammo = "pistol"
 SWEP.Primary.Delay = 0.15
 SWEP.Primary.Recoil = 1.5
 SWEP.Primary.Cone = 0.025
@@ -27,6 +27,8 @@ SWEP.Primary.DefaultClip = 30
 SWEP.Primary.Sound = Sound("Weapon_Elite.Single")
 
 --- Model settings ---
+SWEP.HoldType = "duel"
+
 SWEP.UseHands = true
 SWEP.ViewModelFlip = false
 SWEP.ViewModelFOV = 55

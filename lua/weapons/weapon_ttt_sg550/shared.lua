@@ -1,20 +1,20 @@
+--- Author informations ---
+SWEP.Author = "Zaratusa"
+SWEP.Contact = "http://steamcommunity.com/profiles/76561198032479768"
+
 if SERVER then
 	AddCSLuaFile()
 	resource.AddWorkshop("635030422")
-end
-
-if CLIENT then
-   SWEP.PrintName = "SG550"
-   SWEP.Slot = 2
-   SWEP.Icon = "vgui/ttt/icon_sg550"
+elseif CLIENT then
+	SWEP.PrintName = "SG550"
+	SWEP.Slot = 2
+	SWEP.Icon = "vgui/ttt/icon_sg550"
 end
 
 -- Always derive from weapon_tttbase
 SWEP.Base = "weapon_tttbase"
 
 --- Default GMod values ---
-SWEP.HoldType = "ar2"
-
 SWEP.Primary.Ammo = "357"
 SWEP.Primary.Delay = 0.5
 SWEP.Primary.Recoil = 4
@@ -29,6 +29,8 @@ SWEP.Secondary.Sound = Sound("Default.Zoom")
 SWEP.HeadshotMultiplier = 4
 
 --- Model settings ---
+SWEP.HoldType = "ar2"
+
 SWEP.UseHands = true
 SWEP.ViewModelFlip = false
 SWEP.ViewModelFOV = 60
@@ -52,15 +54,11 @@ SWEP.AutoSpawnable = true
 -- The AmmoEnt is the ammo entity that can be picked up when carrying this gun.
 SWEP.AmmoEnt = "item_ammo_357_ttt"
 
--- If AllowDrop is false, players can't manually drop the gun with Q
-SWEP.AllowDrop = true
-
 -- If IsSilent is true, victims will not scream upon death.
-SWEP.IsSilent = true
+SWEP.IsSilent = false
 
 -- If NoSights is true, the weapon won't have ironsights
 SWEP.NoSights = false
-
 
 -- Add some zoom to the scope for this gun
 function SWEP:SecondaryAttack()

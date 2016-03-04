@@ -1,20 +1,26 @@
+--- Author informations ---
+SWEP.Author = "Zaratusa"
+SWEP.Contact = "http://steamcommunity.com/profiles/76561198032479768"
+
 if SERVER then
 	AddCSLuaFile()
 	resource.AddWorkshop("254177306")
-end
-
-if CLIENT then
-   SWEP.PrintName = "S.L.A.M."
-   SWEP.Slot = 7
-   SWEP.Icon = "vgui/ttt/icon_slam"
+elseif CLIENT then
+	SWEP.PrintName = "M4 SLAM"
+	SWEP.Slot = 7
+	SWEP.Icon = "vgui/ttt/icon_slam"
+	
+	-- Equipment menu information is only needed on the client
+	SWEP.EquipMenuData = {
+		type = "item_weapon",
+		desc = "A mine, with a red laser, placeable on walls.\n\nWhen the red laser is crossed by innocents or\ndetectives, the mine explodes. Can be shot and\ndestroyed by everyone."
+	};
 end
 
 -- Always derive from weapon_tttbase
 SWEP.Base = "weapon_tttbase"
 
 --- Default GMod values ---
-SWEP.HoldType = "slam"
-
 SWEP.Primary.Ammo = "none"
 SWEP.Primary.Delay = 0.5
 SWEP.Primary.Automatic = false
@@ -23,6 +29,8 @@ SWEP.Primary.DefaultClip = 2
 SWEP.FiresUnderwater = false
 
 --- Model settings ---
+SWEP.HoldType = "slam"
+
 SWEP.UseHands = true
 SWEP.ViewModelFlip = false
 SWEP.ViewModelFOV = 64
@@ -52,15 +60,6 @@ SWEP.AllowDrop = false
 
 -- If NoSights is true, the weapon won't have ironsights
 SWEP.NoSights = true
-
--- Equipment menu information is only needed on the client
-if CLIENT then
-	SWEP.EquipMenuData = {
-		type = "item_weapon",
-		desc = "A mine, with a red laser, placeable on walls.\n\nWhen the red laser is crossed by innocents or\ndetectives, the mine explodes. Can be shot and\ndestroyed by everyone."
-	};
-end
-
 
 function SWEP:Deploy()
 	self:SendWeaponAnim(ACT_SLAM_TRIPMINE_DRAW)

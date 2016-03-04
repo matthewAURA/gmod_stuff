@@ -1,20 +1,26 @@
+--- Author informations ---
+SWEP.Author = "Zaratusa"
+SWEP.Contact = "http://steamcommunity.com/profiles/76561198032479768"
+
 if SERVER then
 	AddCSLuaFile()
 	resource.AddWorkshop("253736148")
-end
-
-if CLIENT then
-   SWEP.PrintName = "AK47"
-   SWEP.Slot = 6
-   SWEP.Icon = "vgui/ttt/icon_ak47"
+elseif CLIENT then
+	SWEP.PrintName = "AK47"
+	SWEP.Slot = 6
+	SWEP.Icon = "vgui/ttt/icon_ak47"
+	
+	-- Equipment menu information is only needed on the client
+	SWEP.EquipMenuData = {
+		type = "item_weapon",
+		desc = "Very high damage assault rifle.\n\nHas very high recoil."
+	};
 end
 
 -- Always derive from weapon_tttbase
 SWEP.Base = "weapon_tttbase"
 
 --- Default GMod values ---
-SWEP.HoldType = "ar2"
-
 SWEP.Primary.Ammo = "SMG1"
 SWEP.Primary.Delay = 0.1
 SWEP.Primary.Recoil = 1.9
@@ -27,6 +33,8 @@ SWEP.Primary.DefaultClip = 30
 SWEP.Primary.Sound = Sound("Weapon_AK47.Single")
 
 --- Model settings ---
+SWEP.HoldType = "ar2"
+
 SWEP.UseHands = true
 SWEP.ViewModelFlip = false
 SWEP.ViewModelFOV = 50
@@ -65,11 +73,3 @@ SWEP.IsSilent = false
 
 -- If NoSights is true, the weapon won't have ironsights
 SWEP.NoSights = false
-
--- Equipment menu information is only needed on the client
-if CLIENT then
-	SWEP.EquipMenuData = {
-		type = "item_weapon",
-		desc = "Very high damage assault rifle.\n\nHas very high recoil."
-	};
-end
