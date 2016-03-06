@@ -8,7 +8,7 @@ if SERVER then
 elseif CLIENT then
 	SWEP.PrintName = "Jihad Bomb"
 	SWEP.Slot = 8
-	SWEP.Icon = "vgui/ttt/icon_jihad"
+	SWEP.Icon = "vgui/ttt/icon_jihad_bomb"
 	
 	-- Equipment menu information is only needed on the client
 	SWEP.EquipMenuData = {
@@ -59,8 +59,8 @@ SWEP.NoSights = true
 
 -- Precache sounds and models
 function SWEP:Precache()
-	util.PrecacheSound("weapons/jihad/jihad.wav")
-	util.PrecacheSound("weapons/jihad/big_explosion.wav")
+	util.PrecacheSound("weapons/jihad_bomb/jihad.wav")
+	util.PrecacheSound("weapons/jihad_bomb/big_explosion.wav")
 	
 	util.PrecacheModel("models/humans/charple01.mdl")
 	util.PrecacheModel("models/humans/charple02.mdl")
@@ -128,7 +128,7 @@ function SWEP:PrimaryAttack()
 	if SERVER then
 		-- Only explode, if the code was completely typed in
 		timer.Simple(2.05, function() if (IsValid(self.Owner)) then self:Explode() end end)
-		self.Owner:EmitSound("weapons/jihad/jihad.wav", math.random(100, 150), math.random(95, 105))
+		self.Owner:EmitSound("weapons/jihad_bomb/jihad.wav", math.random(100, 150), math.random(95, 105))
 	end
 end
 
@@ -141,7 +141,7 @@ function SWEP:Explode()
 	local r_inner = 550
 	local r_outer = r_inner * 1.15
 	
-	self:EmitSound("weapons/jihad/big_explosion.wav", 400, math.random(100, 125))
+	self:EmitSound("weapons/jihad_bomb/big_explosion.wav", 400, math.random(100, 125))
 	
 	-- change body to a random charred body	
 	local model = "models/humans/charple0" .. math.random(1,4) .. ".mdl"

@@ -1,6 +1,6 @@
 "UnlitGeneric"
 {
-    "$basetexture" "vgui/ttt/icon_jihad"
+    "$basetexture" "vgui/ttt/icon_jihad_bomb"
     "$vertexcolor" 1
     "$vertexalpha" 1
     "$translucent" 1
