@@ -2,33 +2,63 @@
 SWEP.Author = "Zaratusa"
 SWEP.Contact = "http://steamcommunity.com/profiles/76561198032479768"
 
-if SERVER then
-	AddCSLuaFile()
-	--resource.AddWorkshop("")
-elseif CLIENT then
-	SWEP.PrintName = "Golden Deagle"
-	SWEP.Slot = 6
-	SWEP.Icon = "vgui/ttt/icon_goldendeagle"
-	
-	-- Equipment menu information is only needed on the client
-	SWEP.EquipMenuData = {
-		type = "item_weapon",
-		desc = "Shoot a traitor, kill a traitor.\nShoot an innocent or detective, kill yourself.\nBe careful."
-	};
+local TTT = false
+local SB = false
+if (gmod.GetGamemode().Name == "Trouble in Terrorist Town") then
+	TTT = true
+elseif gmod.GetGamemode().Name == "Sandbox" then
+	SB = true
 end
 
--- Always derive from weapon_tttbase
-SWEP.Base = "weapon_tttbase"
+if SERVER then
+	AddCSLuaFile()
+	resource.AddWorkshop("637848943")
+elseif CLIENT then
+	SWEP.PrintName = "Golden Deagle"
+	if TTT then
+		SWEP.Slot = 6
+		SWEP.Icon = "vgui/ttt/icon_golden_deagle"
+		
+		-- Equipment menu information is only needed on the client
+		SWEP.EquipMenuData = {
+			type = "item_weapon",
+			desc = "Shoot a traitor, kill a traitor.\nShoot an innocent or detective, kill yourself.\nBe careful."
+		};
+	elseif SB then
+		SWEP.Slot = 1
+	end
+end
+
+--- Gamemode dependent settings ---
+if TTT then
+	SWEP.Base = "weapon_tttbase"
+	
+	SWEP.Primary.Ammo = "none"
+	SWEP.Primary.ClipSize = 2
+	SWEP.Primary.DefaultClip = 2	
+elseif SB then
+	SWEP.Base = "weapon_base"
+	SWEP.Category = "TTT"
+	SWEP.Purpose = "A weapon originally created for Detectives in TTT."
+	SWEP.Spawnable = true
+	SWEP.AdminOnly = false
+	SWEP.DrawAmmo = false
+	SWEP.DrawCrosshair = true
+	
+	SWEP.Primary.Ammo = "pistol"
+	SWEP.Primary.ClipSize = 7
+	SWEP.Primary.DefaultClip = 7
+	SWEP.Secondary.Ammo = "none"
+	SWEP.Secondary.ClipSize = -1
+	SWEP.Secondary.DefaultClip = -1
+end
 
 --- Default GMod values ---
-SWEP.Primary.Ammo = "none"
 SWEP.Primary.Delay = 0.6
 SWEP.Primary.Recoil = 6
 SWEP.Primary.Cone = 0.02
 SWEP.Primary.Damage = 37
 SWEP.Primary.Automatic = false
-SWEP.Primary.ClipSize = 2
-SWEP.Primary.DefaultClip = 2
 SWEP.Primary.Sound = Sound("Golden_Deagle.Single")
 
 --- Model settings ---
@@ -37,8 +67,8 @@ SWEP.HoldType = "pistol"
 SWEP.UseHands = true
 SWEP.ViewModelFlip = true
 SWEP.ViewModelFOV = 85
-SWEP.ViewModel = Model("models/weapons/v_golden_deagle.mdl")
-SWEP.WorldModel = Model("models/weapons/w_golden_deagle.mdl")
+SWEP.ViewModel = Model("models/weapons/zaratusa/golden_deagle/v_golden_deagle.mdl")
+SWEP.WorldModel = Model("models/weapons/zaratusa/golden_deagle/w_golden_deagle.mdl")
 
 SWEP.IronSightsPos = Vector(3.76, -0.5, 3.67)
 SWEP.IronSightsAng = Vector(-0.75, 0.06, 0)
@@ -82,30 +112,31 @@ end
 function SWEP:PrimaryAttack()
 	if (self:CanPrimaryAttack()) then
 		self:SetNextPrimaryFire(CurTime() + self.Primary.Delay)
-		self:SetNextSecondaryFire(CurTime() + self.Primary.Delay)		
-		self:SendWeaponAnim(self.PrimaryAnim)
+		self:SetNextSecondaryFire(CurTime() + self.Primary.Delay)
 		
-		-- If the sound is emitted on the weapon, the sound will stop upon owners death, so emit it on the owner instead
-		self.Owner:EmitSound(self.Primary.Sound)
-		self:TakePrimaryAmmo(1)
+		self:SendWeaponAnim(ACT_VM_PRIMARYATTACK)		
+		if SERVER then
+			sound.Play(self.Primary.Sound, self:GetPos(), self.Primary.SoundLevel)
+		end
 		
-		local tr = util.TraceLine(util.GetPlayerTrace(self.Owner))
+		local owner = self.Owner
+		local tr = util.TraceLine(util.GetPlayerTrace(owner))
 		
 		if (SERVER and tr.Entity.IsPlayer() and (tr.Entity:IsRole(ROLE_INNOCENT) or tr.Entity:IsRole(ROLE_DETECTIVE))) then
 			local dmginfo = DamageInfo()
 			dmginfo:SetDamage(1000)
-			dmginfo:SetAttacker(self.Owner)
+			dmginfo:SetAttacker(owner)
 			dmginfo:SetInflictor(self)
 			dmginfo:SetDamageType(DMG_BULLET)
-			dmginfo:SetDamagePosition(self.Owner:GetPos())
+			dmginfo:SetDamagePosition(owner:GetPos())
 				
-			self.Owner:TakeDamageInfo(dmginfo)
+			owner:TakeDamageInfo(dmginfo)
 		else
 			local bullet = {}
-			bullet.Attacker = self.Owner
+			bullet.Attacker = owner
 			bullet.Num = self.Primary.NumberofShots
-			bullet.Src = self.Owner:GetShootPos()
-			bullet.Dir = self.Owner:GetAimVector()
+			bullet.Src = owner:GetShootPos()
+			bullet.Dir = owner:GetAimVector()
 			bullet.AmmoType = self.Primary.Ammo
 			
 			if (tr.Entity.IsPlayer() and tr.Entity:IsRole(ROLE_TRAITOR)) then
@@ -113,9 +144,20 @@ function SWEP:PrimaryAttack()
 				bullet.Damage = 1000
 			else
 				bullet.Damage = self.Primary.Damage
+				bullet.Spread = Vector(self.Primary.Cone, self.Primary.Cone, 0)
 			end
 			
 			self:FireBullets(bullet)
 		end
+		self:TakePrimaryAmmo(1)
+		
+		if (IsValid(owner) and !owner:IsNPC() and owner.ViewPunch) then
+			owner:ViewPunch(Angle(math.Rand(-0.2,-0.1) * self.Primary.Recoil, math.Rand(-0.1,0.1) * self.Primary.Recoil, 0))
+		end
+	end
+end
+
+if SB then
+	function SWEP:SecondaryAttack()
 	end
 end

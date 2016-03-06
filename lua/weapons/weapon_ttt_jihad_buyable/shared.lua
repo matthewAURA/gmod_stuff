@@ -34,8 +34,8 @@ SWEP.UseHands = true
 SWEP.DrawAmmo = false
 SWEP.ViewModelFlip = false
 SWEP.ViewModelFOV = 54
-SWEP.ViewModel = Model("models/weapons/v_jb.mdl")
-SWEP.WorldModel = Model("models/weapons/w_jb.mdl")
+SWEP.ViewModel = Model("models/weapons/zaratusa/jihad_bomb/v_jb.mdl")
+SWEP.WorldModel = Model("models/weapons/zaratusa/jihad_bomb/w_jb.mdl")
 
 --- TTT config values ---
 

@@ -3,5 +3,5 @@ sound.Add({
 	channel = CHAN_WEAPON,
 	volume = 1.0,
 	pitch = {95, 105},
-	sound = "weapons/goldendeagle/deagle-1.wav"
+	sound = "weapons/golden_deagle/deagle-1.wav"
 })
