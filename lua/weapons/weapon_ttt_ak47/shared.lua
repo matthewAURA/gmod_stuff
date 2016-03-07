@@ -1,7 +1,3 @@
---- Author informations ---
-SWEP.Author = "Zaratusa"
-SWEP.Contact = "http://steamcommunity.com/profiles/76561198032479768"
-
 if SERVER then
 	AddCSLuaFile()
 	resource.AddWorkshop("253736148")
@@ -9,7 +5,7 @@ elseif CLIENT then
 	SWEP.PrintName = "AK47"
 	SWEP.Slot = 6
 	SWEP.Icon = "vgui/ttt/icon_ak47"
-	
+
 	-- Equipment menu information is only needed on the client
 	SWEP.EquipMenuData = {
 		type = "item_weapon",
@@ -51,7 +47,7 @@ SWEP.IronSightsAng = Vector(2.737, 0.158, 0)
 -- Matching SWEP.Slot values: 0      1       2     3      4      6       7        8
 SWEP.Kind = WEAPON_EQUIP1
 
--- If AutoSpawnable is true and SWEP.Kind is not WEAPON_EQUIP1/2, 
+-- If AutoSpawnable is true and SWEP.Kind is not WEAPON_EQUIP1/2,
 -- then this gun can be spawned as a random weapon.
 SWEP.AutoSpawnable = false
 

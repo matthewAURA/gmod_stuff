@@ -2,7 +2,6 @@
 SWEP.Author = "Zaratusa"
 SWEP.Contact = "http://steamcommunity.com/profiles/76561198032479768"
 
--- Which gamemode
 local TTT = false
 local SB = false
 if (gmod.GetGamemode().Name == "Trouble in Terrorist Town") then
@@ -19,7 +18,7 @@ elseif CLIENT then
 	SWEP.Slot = 1
 	if TTT then
 		SWEP.Icon = "vgui/ttt/icon_dragon_elites"
-	   
+
 		-- Equipment menu information is only needed on the client
 		SWEP.EquipMenuData = {
 			type = "item_weapon",
@@ -39,7 +38,7 @@ elseif SB then
 	SWEP.AdminOnly = false
 	SWEP.DrawAmmo = false
 	SWEP.DrawCrosshair = true
-	
+
 	SWEP.Secondary.Ammo = "none"
 	SWEP.Secondary.ClipSize = -1
 	SWEP.Secondary.DefaultClip = -1
@@ -75,7 +74,7 @@ SWEP.WorldModel = Model("models/weapons/zaratusa/dragon_elites/w_dragon_elites.m
 -- Matching SWEP.Slot values: 0      1       2     3      4      6       7        8
 SWEP.Kind = WEAPON_PISTOL
 
--- If AutoSpawnable is true and SWEP.Kind is not WEAPON_EQUIP1/2, 
+-- If AutoSpawnable is true and SWEP.Kind is not WEAPON_EQUIP1/2,
 -- then this gun can be spawned as a random weapon.
 SWEP.AutoSpawnable = false
 
@@ -112,15 +111,15 @@ if SB then
 		if (self:CanPrimaryAttack()) then
 			self:SetNextPrimaryFire(CurTime() + self.Primary.Delay)
 			self:SetNextSecondaryFire(CurTime() + self.Primary.Delay)
-			
-			self:SendWeaponAnim(ACT_VM_PRIMARYATTACK)		
+
+			self:SendWeaponAnim(ACT_VM_PRIMARYATTACK)
 			if SERVER then
 				sound.Play(self.Primary.Sound, self:GetPos(), self.Primary.SoundLevel)
 			end
-			
+
 			self:ShootBullet(self.Primary.Damage, self.Primary.Recoil, self.Primary.NumShots, self.Primary.Cone)
 			self:TakePrimaryAmmo(1)
-			
+
 			if (IsValid(owner) and !owner:IsNPC() and owner.ViewPunch) then
 				owner:ViewPunch(Angle(math.Rand(-0.2,-0.1) * self.Primary.Recoil, math.Rand(-0.1,0.1) * self.Primary.Recoil, 0))
 			end

@@ -1,12 +1,10 @@
 if SERVER then
 	AddCSLuaFile()
 	resource.AddWorkshop("253737973")
-end
-
-if CLIENT then
-   SWEP.PrintName = "TMP"
-   SWEP.Slot = 2
-   SWEP.Icon = "vgui/ttt/icon_tmp"
+elseif CLIENT then
+	SWEP.PrintName = "TMP"
+	SWEP.Slot = 2
+	SWEP.Icon = "vgui/ttt/icon_tmp"
 end
 
 -- Always derive from weapon_tttbase
@@ -43,7 +41,7 @@ SWEP.IronSightsAng = Vector (2.253, 0.9, 0.7)
 -- Matching SWEP.Slot values: 0      1       2     3      4      6       7        8
 SWEP.Kind = WEAPON_HEAVY
 
--- If AutoSpawnable is true and SWEP.Kind is not WEAPON_EQUIP1/2, 
+-- If AutoSpawnable is true and SWEP.Kind is not WEAPON_EQUIP1/2,
 -- then this gun can be spawned as a random weapon.
 SWEP.AutoSpawnable = true
 
@@ -58,9 +56,3 @@ SWEP.IsSilent = true
 
 -- If NoSights is true, the weapon won't have ironsights
 SWEP.NoSights = false
-
-
-function SWEP:Deploy()
-	self:SendWeaponAnim(ACT_VM_DRAW_SILENCED)
-	return true
-end

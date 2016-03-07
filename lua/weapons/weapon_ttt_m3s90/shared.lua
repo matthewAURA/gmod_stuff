@@ -1,20 +1,16 @@
 if SERVER then
 	AddCSLuaFile()
 	resource.AddWorkshop("253737175")
-end
-
-if CLIENT then
-   SWEP.PrintName = "M3S90"
-   SWEP.Slot = 2
-   SWEP.Icon = "vgui/ttt/icon_m3s90"
+elseif CLIENT then
+	SWEP.PrintName = "M3S90"
+	SWEP.Slot = 2
+	SWEP.Icon = "vgui/ttt/icon_m3s90"
 end
 
 -- Always derive from weapon_tttbase
 SWEP.Base = "weapon_tttbase"
 
 --- Default GMod values ---
-SWEP.HoldType = "shotgun"
-
 SWEP.Primary.Ammo = "Buckshot"
 SWEP.Primary.Delay = 1.2
 SWEP.Primary.Recoil	= 7
@@ -28,6 +24,8 @@ SWEP.Primary.Sound = Sound("Weapon_M3.Single")
 SWEP.Primary.NumShots = 8
 
 --- Model settings ---
+SWEP.HoldType = "shotgun"
+
 SWEP.UseHands = true
 SWEP.ViewModelFlip = false
 SWEP.ViewModelFOV = 58
@@ -44,7 +42,7 @@ SWEP.IronSightsAng = Vector(0.637, 0.01, -1.458)
 -- Matching SWEP.Slot values: 0      1       2     3      4      6       7        8
 SWEP.Kind = WEAPON_HEAVY
 
--- If AutoSpawnable is true and SWEP.Kind is not WEAPON_EQUIP1/2, 
+-- If AutoSpawnable is true and SWEP.Kind is not WEAPON_EQUIP1/2,
 -- then this gun can be spawned as a random weapon.
 SWEP.AutoSpawnable = true
 
@@ -62,7 +60,6 @@ SWEP.NoSights = false
 
 SWEP.reloadtimer = 0
 
-
 function SWEP:SetupDataTables()
 	self:DTVar("Bool", 0, "reloading")
 	return self.BaseClass.SetupDataTables(self)
@@ -74,7 +71,7 @@ function SWEP:CanPrimaryAttack()
 		self:EmitSound("Weapon_Shotgun.Empty")
 		return false
 	end
-	
+
 	return true
 end
 
@@ -86,7 +83,7 @@ function SWEP:SecondaryAttack()
 end
 
 function SWEP:Reload()
-	if ((not self.dt.reloading) and IsFirstTimePredicted() 
+	if ((not self.dt.reloading) and IsFirstTimePredicted()
 		and self:Clip1() < self.Primary.ClipSize and self.Owner:GetAmmoCount(self.Primary.Ammo) > 0) then
 		self:StartReload()
 	end
@@ -102,7 +99,7 @@ function SWEP:StartReload()
 				self.reloadtimer = CurTime() + self:SequenceDuration()
 				self.dt.reloading = true
 			end
-		end		
+		end
 	end
 end
 
@@ -134,7 +131,7 @@ end
 function SWEP:PerformReload()
 	-- Prevent normal shooting in between reloads
 	self:SetNextPrimaryFire(CurTime() + self.Primary.Delay)
-	
+
 	if (self:Clip1() < self.Primary.ClipSize and self.Owner:GetAmmoCount(self.Primary.Ammo) > 0) then
 		self:SendWeaponAnim(ACT_VM_RELOAD)
 		self.Owner:RemoveAmmo(1, self.Primary.Ammo, false)
@@ -155,15 +152,14 @@ end
 -- lucky headshots relatively easily due to the spread.
 function SWEP:GetHeadshotMultiplier(victim, dmginfo)
 	local att = dmginfo:GetAttacker()
-	
+
 	if (IsValid(att)) then
 		local dist = victim:GetPos():Distance(att:GetPos())
 		local d = math.max(0, dist - 140)
-		
+
 		-- Decay from 3.1 to 1 slowly as distance increases
 		return 1 + math.max(0, (2.1 - 0.002 * (d ^ 1.25)))
 	else
 		return 3
 	end
 end
-

@@ -9,7 +9,7 @@ elseif CLIENT then
 	SWEP.PrintName = "Jihad Bomb"
 	SWEP.Slot = 8
 	SWEP.Icon = "vgui/ttt/icon_jihad_bomb"
-	
+
 	-- Equipment menu information is only needed on the client
 	SWEP.EquipMenuData = {
 		type = "item_weapon",
@@ -44,6 +44,10 @@ SWEP.WorldModel = Model("models/weapons/zaratusa/jihad_bomb/w_jb.mdl")
 -- Matching SWEP.Slot values: 0      1       2     3      4      6       7        8
 SWEP.Kind = WEAPON_ROLE
 
+-- If AutoSpawnable is true and SWEP.Kind is not WEAPON_EQUIP1/2,
+-- then this gun can be spawned as a random weapon.
+SWEP.AutoSpawnable = false
+
 -- CanBuy is a table of ROLE_* entries like ROLE_TRAITOR and ROLE_DETECTIVE. If
 -- a role is in this table, those players can buy this.
 SWEP.CanBuy = { ROLE_TRAITOR }
@@ -64,7 +68,7 @@ SWEP.NoSights = true
 function SWEP:Precache()
 	util.PrecacheSound("weapons/jihad_bomb/jihad.wav")
 	util.PrecacheSound("weapons/jihad_bomb/big_explosion.wav")
-	
+
 	util.PrecacheModel("models/humans/charple01.mdl")
 	util.PrecacheModel("models/humans/charple02.mdl")
 	util.PrecacheModel("models/humans/charple03.mdl")
@@ -102,9 +106,9 @@ local function BurnOwnersBody(model)
 			body = ragdoll
 		end
 	end
-	
+
 	ScorchUnderRagdoll(body)
-	
+
 	if SERVER then
 		local burn_time = 7.5
 		local burn_destroy = CurTime() + burn_time
@@ -118,7 +122,7 @@ end
 function SWEP:PrimaryAttack()
 	self:SetNextPrimaryFire(CurTime() + self.Primary.Delay)
 	self.AllowDrop = false
-	
+
 	local effectdata = EffectData()
 	effectdata:SetOrigin(self:GetPos())
 	effectdata:SetNormal(self:GetPos())
@@ -141,22 +145,22 @@ function SWEP:Explode()
 	local pos = self:GetPos()
 	local dmg = 200
 	local dmgowner = self.Owner
-	
+
 	local r_inner = 550
 	local r_outer = r_inner * 1.15
-	
+
 	self:EmitSound("weapons/jihad_bomb/big_explosion.wav", 400, math.random(100, 125))
-	
-	-- change body to a random charred body	
+
+	-- change body to a random charred body
 	local model = "models/humans/charple0" .. math.random(1,4) .. ".mdl"
 	self.Owner:SetModel(model)
-	
+
 	-- damage through walls
 	self:SphereDamage(dmgowner, pos, r_inner)
-	
+
 	-- explosion damage
 	util.BlastDamage(self, dmgowner, pos, r_outer, dmg)
-	
+
 	local effect = EffectData()
 	effect:SetStart(pos)
 	effect:SetOrigin(pos)
@@ -164,7 +168,7 @@ function SWEP:Explode()
 	effect:SetRadius(r_outer)
 	effect:SetMagnitude(dmg)
 	util.Effect("Explosion", effect, true, true)
-		
+
 	self:Remove()
 	BurnOwnersBody(model)
 end
@@ -172,7 +176,7 @@ end
 -- Calculate who is affected by the damage
 function SWEP:SphereDamage(dmgowner, center, radius)
 	local r = radius ^ 2 -- square so we can compare with dotproduct directly
-   
+
 	local d = 0.0
 	local diff = nil
 	local dmg = 0
@@ -187,7 +191,7 @@ function SWEP:SphereDamage(dmgowner, center, radius)
 				-- deadly up to a certain range, then a quick falloff
 				d = math.max(0, math.sqrt(d) - 400)
 				dmg = -0.01 * (d^2) + 125
-				
+
 				local dmginfo = DamageInfo()
 				dmginfo:SetDamage(dmg)
 				dmginfo:SetAttacker(dmgowner)
@@ -195,7 +199,7 @@ function SWEP:SphereDamage(dmgowner, center, radius)
 				dmginfo:SetDamageType(DMG_BLAST)
 				dmginfo:SetDamageForce(diff)
 				dmginfo:SetDamagePosition(ent:GetPos())
-				
+
 				ent:TakeDamageInfo(dmginfo)
 			end
 		end

@@ -1,21 +1,27 @@
+--- Author informations ---
+SWEP.Author = "Zaratusa"
+SWEP.Contact = "http://steamcommunity.com/profiles/76561198032479768"
+
 if SERVER then
 	AddCSLuaFile()
 	resource.AddWorkshop("253737867")
-end
+elseif CLIENT then
+	SWEP.PrintName = "Silenced M4A1"
+	SWEP.Slot = 6
+	SWEP.Icon = "vgui/ttt/icon_silm4a1"
 
-if CLIENT then
-   SWEP.PrintName = "Silenced M4A1"
-   SWEP.Slot = 6
-   SWEP.Icon = "vgui/ttt/icon_silm4a1"
+	-- Equipment menu information is only needed on the client
+	SWEP.EquipMenuData = {
+		type = "item_weapon",
+		desc = "A modified M4A1 carbine with a suppressor.\nVictims will not scream when they're killed."
+	};
 end
 
 -- Always derive from weapon_tttbase
 SWEP.Base = "weapon_tttbase"
 
 --- Default GMod values ---
-SWEP.HoldType = "ar2"
-
-SWEP.Primary.Ammo = "Pistol"
+SWEP.Primary.Ammo = "pistol"
 SWEP.Primary.Delay = 0.08
 SWEP.Primary.Recoil	= 1.35
 SWEP.Primary.Cone = 0.02
@@ -27,6 +33,8 @@ SWEP.Primary.DefaultClip = 30
 SWEP.Primary.Sound = Sound("Weapon_M4A1.Silenced")
 
 --- Model settings ---
+SWEP.HoldType = "ar2"
+
 SWEP.UseHands = true
 SWEP.ViewModelFlip = false
 SWEP.ViewModelFOV = 64
@@ -42,8 +50,8 @@ SWEP.IronSightsAng = Vector(2.599, -1.3, -3.6)
 -- each. Can be: WEAPON_... MELEE, PISTOL, HEAVY, NADE, CARRY, EQUIP1, EQUIP2 or ROLE.
 -- Matching SWEP.Slot values: 0      1       2     3      4      6       7        8
 SWEP.Kind = WEAPON_EQUIP1
-   
--- If AutoSpawnable is true and SWEP.Kind is not WEAPON_EQUIP1/2, 
+
+-- If AutoSpawnable is true and SWEP.Kind is not WEAPON_EQUIP1/2,
 -- then this gun can be spawned as a random weapon.
 SWEP.AutoSpawnable = false
 
@@ -66,20 +74,14 @@ SWEP.IsSilent = true
 -- If NoSights is true, the weapon won't have ironsights
 SWEP.NoSights = false
 
--- Equipment menu information is only needed on the client
-if CLIENT then
-	SWEP.EquipMenuData = {
-		type = "item_weapon",
-		desc = "A modified M4A1 carbine with a suppressor.\n\nVictims will not scream when they're killed."
-	};
-end
-
+SWEP.PrimaryAnim = ACT_VM_PRIMARYATTACK_SILENCED
+SWEP.ReloadAnim = ACT_VM_RELOAD_SILENCED
 
 -- Add some zoom to ironsights for this gun
 function SWEP:SecondaryAttack()
 	if (self.IronSightsPos and self:GetNextSecondaryFire() <= CurTime()) then
 		self:SetNextSecondaryFire(CurTime() + 0.3)
-		
+
 		local bIronsights = not self:GetIronsights()
 		self:SetIronsights(bIronsights)
 		if SERVER then
@@ -110,12 +112,18 @@ end
 
 function SWEP:Reload()
 	if (self:Clip1() < self.Primary.ClipSize and self.Owner:GetAmmoCount(self.Primary.Ammo) > 0) then
-		self:DefaultReload(ACT_VM_RELOAD)
+		self:DefaultReload(self.ReloadAnim)
 		self:ResetIronSights()
 	end
 end
 
-function SWEP:Holster()	
+function SWEP:Deploy()
+	self:SendWeaponAnim(ACT_VM_DRAW_SILENCED)
+	self:ResetIronSights()
+	return true
+end
+
+function SWEP:Holster()
 	self:ResetIronSights()
 	return true
 end

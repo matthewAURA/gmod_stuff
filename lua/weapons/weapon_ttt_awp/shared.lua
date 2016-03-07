@@ -1,20 +1,22 @@
 if SERVER then
 	AddCSLuaFile()
 	resource.AddWorkshop("253736514")
-end
+elseif CLIENT then
+	SWEP.PrintName = "AWP"
+	SWEP.Slot = 6
+	SWEP.Icon = "vgui/ttt/icon_awp"
 
-if CLIENT then
-   SWEP.PrintName = "AWP"
-   SWEP.Slot = 6
-   SWEP.Icon = "vgui/ttt/icon_awp"
+	-- Equipment menu information is only needed on the client
+	SWEP.EquipMenuData = {
+		type = "item_weapon",
+		desc = "AWP Sniper Rifle.\n\nOnly has two shots."
+	};
 end
 
 -- Always derive from weapon_tttbase
 SWEP.Base = "weapon_tttbase"
 
 --- Default GMod values ---
-SWEP.HoldType = "ar2"
-
 SWEP.Primary.Ammo = "none"
 SWEP.Primary.Delay = 2
 SWEP.Primary.Recoil = 10
@@ -25,9 +27,10 @@ SWEP.Primary.ClipSize = 2
 SWEP.Primary.DefaultClip = 2
 SWEP.Primary.Sound = Sound("Weapon_AWP.Single")
 SWEP.Secondary.Sound = Sound("Default.Zoom")
-SWEP.HeadshotMultiplier = 2
 
 --- Model settings ---
+SWEP.HoldType = "ar2"
+
 SWEP.UseHands = true
 SWEP.ViewModelFlip = false
 SWEP.ViewModelFOV = 64
@@ -44,7 +47,7 @@ SWEP.IronSightsAng = Vector(2.6, 1.37, 3.5)
 -- Matching SWEP.Slot values: 0      1       2     3      4      6       7        8
 SWEP.Kind = WEAPON_EQUIP1
 
--- If AutoSpawnable is true and SWEP.Kind is not WEAPON_EQUIP1/2, 
+-- If AutoSpawnable is true and SWEP.Kind is not WEAPON_EQUIP1/2,
 -- then this gun can be spawned as a random weapon.
 SWEP.AutoSpawnable = false
 
@@ -64,20 +67,11 @@ SWEP.IsSilent = false
 -- If NoSights is true, the weapon won't have ironsights
 SWEP.NoSights = false
 
--- Equipment menu information is only needed on the client
-if CLIENT then
-	SWEP.EquipMenuData = {
-		type = "item_weapon",
-		desc = "AWP Sniper Rifle.\n\nOnly has two shots."
-	};
-end
-
-
 -- Add some zoom to the scope for this gun
 function SWEP:SecondaryAttack()
 	if (self.IronSightsPos and self:GetNextSecondaryFire() <= CurTime()) then
 		self:SetNextSecondaryFire(CurTime() + 0.3)
-		
+
 		local bIronsights = not self:GetIronsights()
 		self:SetIronsights(bIronsights)
 		if SERVER then
@@ -115,22 +109,22 @@ function SWEP:Reload()
 	end
 end
 
-function SWEP:Holster()	
+function SWEP:Holster()
 	self:ResetIronSights()
 	return true
 end
 
--- Draw the Scope on the HUD
+-- Draw the scope on the HUD
 if CLIENT then
 	local scope = surface.GetTextureID("sprites/scope")
 	function SWEP:DrawHUD()
 		if self:GetIronsights() then
 			surface.SetDrawColor(0, 0, 0, 255)
-			
+
 			local x = ScrW() / 2.0
 			local y = ScrH() / 2.0
 			local scope_size = ScrH()
-			
+
 			-- crosshair
 			local gap = 80
 			local length = scope_size
@@ -138,14 +132,14 @@ if CLIENT then
 			surface.DrawLine(x + length, y, x + gap, y)
 			surface.DrawLine(x, y - length, x, y - gap)
 			surface.DrawLine(x, y + length, x, y + gap)
-			
+
 			gap = 0
 			length = 50
 			surface.DrawLine(x - length, y, x - gap, y)
 			surface.DrawLine(x + length, y, x + gap, y)
 			surface.DrawLine(x, y - length, x, y - gap)
 			surface.DrawLine(x, y + length, x, y + gap)
-			
+
 			-- cover edges
 			local sh = scope_size / 2
 			local w = (x - sh) + 2
@@ -153,7 +147,7 @@ if CLIENT then
 			surface.DrawRect(x + sh - 2, 0, w, scope_size)
 			surface.SetDrawColor(255, 0, 0, 255)
 			surface.DrawLine(x, y, x + 1, y + 1)
-			
+
 			-- scope
 			surface.SetTexture(scope)
 			surface.SetDrawColor(255, 255, 255, 255)
@@ -162,7 +156,7 @@ if CLIENT then
 			return self.BaseClass.DrawHUD(self)
 		end
 	end
-	
+
 	function SWEP:AdjustMouseSensitivity()
 		return (self:GetIronsights() and 0.2) or nil
 	end

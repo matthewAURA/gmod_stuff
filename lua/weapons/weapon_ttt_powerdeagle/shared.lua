@@ -18,7 +18,7 @@ elseif CLIENT then
 	if TTT then
 		SWEP.Slot = 6
 		SWEP.Icon = "vgui/ttt/icon_powerdeagle"
-		
+
 		-- Equipment menu information is only needed on the client
 		SWEP.EquipMenuData = {
 			type = "item_weapon",
@@ -32,10 +32,10 @@ end
 --- Gamemode dependent settings ---
 if TTT then
 	SWEP.Base = "weapon_tttbase"
-	
+
 	SWEP.Primary.Ammo = "none"
 	SWEP.Primary.ClipSize = 2
-	SWEP.Primary.DefaultClip = 2	
+	SWEP.Primary.DefaultClip = 2
 elseif SB then
 	SWEP.Base = "weapon_base"
 	SWEP.Category = "TTT"
@@ -44,7 +44,7 @@ elseif SB then
 	SWEP.AdminOnly = false
 	SWEP.DrawAmmo = false
 	SWEP.DrawCrosshair = true
-	
+
 	SWEP.Primary.Ammo = "pistol"
 	SWEP.Primary.ClipSize = 7
 	SWEP.Primary.DefaultClip = 7
@@ -80,6 +80,10 @@ SWEP.IronSightsAng = Vector(0, 0, 75)
 -- Matching SWEP.Slot values: 0      1       2     3      4      6       7        8
 SWEP.Kind = WEAPON_EQUIP1
 
+-- If AutoSpawnable is true and SWEP.Kind is not WEAPON_EQUIP1/2,
+-- then this gun can be spawned as a random weapon.
+SWEP.AutoSpawnable = false
+
 -- The AmmoEnt is the ammo entity that can be picked up when carrying this gun.
 SWEP.AmmoEnt = "none"
 
@@ -108,15 +112,15 @@ function SWEP:PrimaryAttack()
 	if (self:CanPrimaryAttack()) then
 		self:SetNextPrimaryFire(CurTime() + self.Primary.Delay)
 		self:SetNextSecondaryFire(CurTime() + self.Primary.Delay)
-		
-		self:SendWeaponAnim(ACT_VM_PRIMARYATTACK)		
+
+		self:SendWeaponAnim(ACT_VM_PRIMARYATTACK)
 		if SERVER then
 			sound.Play(self.Primary.Sound, self:GetPos(), self.Primary.SoundLevel)
 		end
-		
+
 		local owner = self.Owner
 		local tr = util.TraceLine(util.GetPlayerTrace(owner))
-		
+
 		if (SERVER and tr.Entity.IsPlayer() and (tr.Entity:IsRole(ROLE_INNOCENT) or tr.Entity:IsRole(ROLE_DETECTIVE))) then
 			local dmginfo = DamageInfo()
 			dmginfo:SetDamage(1000)
@@ -124,7 +128,7 @@ function SWEP:PrimaryAttack()
 			dmginfo:SetInflictor(self)
 			dmginfo:SetDamageType(DMG_BULLET)
 			dmginfo:SetDamagePosition(owner:GetPos())
-				
+
 			owner:TakeDamageInfo(dmginfo)
 		else
 			local bullet = {}
@@ -133,7 +137,7 @@ function SWEP:PrimaryAttack()
 			bullet.Src = owner:GetShootPos()
 			bullet.Dir = owner:GetAimVector()
 			bullet.AmmoType = self.Primary.Ammo
-			
+
 			if (tr.Entity.IsPlayer() and tr.Entity:IsRole(ROLE_TRAITOR)) then
 				bullet.Force = 1000
 				bullet.Damage = 1000
@@ -141,11 +145,11 @@ function SWEP:PrimaryAttack()
 				bullet.Damage = self.Primary.Damage
 				bullet.Spread = Vector(self.Primary.Cone, self.Primary.Cone, 0)
 			end
-			
+
 			self:FireBullets(bullet)
 		end
 		self:TakePrimaryAmmo(1)
-		
+
 		if (IsValid(owner) and !owner:IsNPC() and owner.ViewPunch) then
 			owner:ViewPunch(Angle(math.Rand(-0.2,-0.1) * self.Primary.Recoil, math.Rand(-0.1,0.1) * self.Primary.Recoil, 0))
 		end

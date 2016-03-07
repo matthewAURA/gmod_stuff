@@ -1,21 +1,17 @@
 if SERVER then
 	AddCSLuaFile()
 	resource.AddWorkshop("253737636")
-end
-
-if CLIENT then
-   SWEP.PrintName = "P228"
-   SWEP.Slot = 1
-   SWEP.Icon = "vgui/ttt/icon_p228"
+elseif CLIENT then
+	SWEP.PrintName = "P228"
+	SWEP.Slot = 1
+	SWEP.Icon = "vgui/ttt/icon_p228"
 end
 
 -- Always derive from weapon_tttbase
 SWEP.Base = "weapon_tttbase"
 
 --- Default GMod values ---
-SWEP.HoldType = "pistol"
-
-SWEP.Primary.Ammo = "Pistol"
+SWEP.Primary.Ammo = "pistol"
 SWEP.Primary.Delay = 0.25
 SWEP.Primary.Recoil	= 0.9
 SWEP.Primary.Cone = 0.028
@@ -27,6 +23,8 @@ SWEP.Primary.DefaultClip = 20
 SWEP.Primary.Sound = Sound("Weapon_P228.Single")
 
 --- Model settings ---
+SWEP.HoldType = "pistol"
+
 SWEP.UseHands = true
 SWEP.ViewModelFlip = false
 SWEP.ViewModelFOV = 54
@@ -43,7 +41,7 @@ SWEP.IronSightsAng = Vector(0, 0, 0)
 -- Matching SWEP.Slot values: 0      1       2     3      4      6       7        8
 SWEP.Kind = WEAPON_PISTOL
 
--- If AutoSpawnable is true and SWEP.Kind is not WEAPON_EQUIP1/2, 
+-- If AutoSpawnable is true and SWEP.Kind is not WEAPON_EQUIP1/2,
 -- then this gun can be spawned as a random weapon.
 SWEP.AutoSpawnable = true
 

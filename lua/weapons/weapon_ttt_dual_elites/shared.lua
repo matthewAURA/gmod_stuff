@@ -8,7 +8,7 @@ if SERVER then
 elseif CLIENT then
 	SWEP.PrintName = "Dual Elites"
 	SWEP.Slot = 1
-	SWEP.Icon = "vgui/ttt/icon_dualelites"
+	SWEP.Icon = "vgui/ttt/icon_dual_elites"
 end
 
 -- Always derive from weapon_tttbase
@@ -42,7 +42,7 @@ SWEP.WorldModel = Model("models/weapons/w_pist_elite.mdl")
 -- Matching SWEP.Slot values: 0      1       2     3      4      6       7        8
 SWEP.Kind = WEAPON_PISTOL
 
--- If AutoSpawnable is true and SWEP.Kind is not WEAPON_EQUIP1/2, 
+-- If AutoSpawnable is true and SWEP.Kind is not WEAPON_EQUIP1/2,
 -- then this gun can be spawned as a random weapon.
 SWEP.AutoSpawnable = true
 

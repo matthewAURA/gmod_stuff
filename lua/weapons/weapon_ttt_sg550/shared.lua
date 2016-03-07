@@ -6,7 +6,7 @@ if SERVER then
 	AddCSLuaFile()
 	resource.AddWorkshop("635030422")
 elseif CLIENT then
-	SWEP.PrintName = "SG550"
+	SWEP.PrintName = "SG-550"
 	SWEP.Slot = 2
 	SWEP.Icon = "vgui/ttt/icon_sg550"
 end
@@ -47,12 +47,15 @@ SWEP.IronSightsAng = Vector(2.6, 1.37, 3.5)
 -- Matching SWEP.Slot values: 0      1       2     3      4      6       7        8
 SWEP.Kind = WEAPON_HEAVY
 
--- If AutoSpawnable is true and SWEP.Kind is not WEAPON_EQUIP1/2, 
+-- If AutoSpawnable is true and SWEP.Kind is not WEAPON_EQUIP1/2,
 -- then this gun can be spawned as a random weapon.
 SWEP.AutoSpawnable = true
 
 -- The AmmoEnt is the ammo entity that can be picked up when carrying this gun.
 SWEP.AmmoEnt = "item_ammo_357_ttt"
+
+-- If AllowDrop is false, players can't manually drop the gun with Q
+SWEP.AllowDrop = true
 
 -- If IsSilent is true, victims will not scream upon death.
 SWEP.IsSilent = false
@@ -64,7 +67,7 @@ SWEP.NoSights = false
 function SWEP:SecondaryAttack()
 	if (self.IronSightsPos and self:GetNextSecondaryFire() <= CurTime()) then
 		self:SetNextSecondaryFire(CurTime() + 0.3)
-		
+
 		local bIronsights = not self:GetIronsights()
 		self:SetIronsights(bIronsights)
 		if SERVER then
@@ -102,22 +105,22 @@ function SWEP:Reload()
 	end
 end
 
-function SWEP:Holster()	
+function SWEP:Holster()
 	self:ResetIronSights()
 	return true
 end
 
--- Draw the Scope on the HUD
+-- Draw the scope on the HUD
 if CLIENT then
 	local scope = surface.GetTextureID("sprites/scope")
 	function SWEP:DrawHUD()
 		if self:GetIronsights() then
 			surface.SetDrawColor(0, 0, 0, 255)
-			
+
 			local x = ScrW() / 2.0
 			local y = ScrH() / 2.0
 			local scope_size = ScrH()
-			
+
 			-- crosshair
 			local gap = 80
 			local length = scope_size
@@ -125,14 +128,14 @@ if CLIENT then
 			surface.DrawLine(x + length, y, x + gap, y)
 			surface.DrawLine(x, y - length, x, y - gap)
 			surface.DrawLine(x, y + length, x, y + gap)
-			
+
 			gap = 0
 			length = 50
 			surface.DrawLine(x - length, y, x - gap, y)
 			surface.DrawLine(x + length, y, x + gap, y)
 			surface.DrawLine(x, y - length, x, y - gap)
 			surface.DrawLine(x, y + length, x, y + gap)
-			
+
 			-- cover edges
 			local sh = scope_size / 2
 			local w = (x - sh) + 2
@@ -140,7 +143,7 @@ if CLIENT then
 			surface.DrawRect(x + sh - 2, 0, w, scope_size)
 			surface.SetDrawColor(255, 0, 0, 255)
 			surface.DrawLine(x, y, x + 1, y + 1)
-			
+
 			-- scope
 			surface.SetTexture(scope)
 			surface.SetDrawColor(255, 255, 255, 255)
@@ -149,7 +152,7 @@ if CLIENT then
 			return self.BaseClass.DrawHUD(self)
 		end
 	end
-	
+
 	function SWEP:AdjustMouseSensitivity()
 		return (self:GetIronsights() and 0.2) or nil
 	end
