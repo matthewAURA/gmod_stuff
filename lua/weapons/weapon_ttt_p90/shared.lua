@@ -1,3 +1,7 @@
+--- Author informations ---
+SWEP.Author = "Zaratusa"
+SWEP.Contact = "http://steamcommunity.com/profiles/76561198032479768"
+
 if SERVER then
 	AddCSLuaFile()
 	resource.AddWorkshop("253737433")
@@ -27,6 +31,7 @@ SWEP.Primary.ClipSize = 50
 SWEP.Primary.ClipMax = 100
 SWEP.Primary.DefaultClip = 50
 SWEP.Primary.Sound = Sound("Weapon_P90.Single")
+SWEP.Secondary.Delay = 0.3
 SWEP.Secondary.Sound = Sound("Default.Zoom")
 
 --- Model settings ---
@@ -74,7 +79,8 @@ SWEP.NoSights = false
 -- Add some zoom to the scope for this gun
 function SWEP:SecondaryAttack()
 	if (self.IronSightsPos and self:GetNextSecondaryFire() <= CurTime()) then
-		self:SetNextSecondaryFire(CurTime() + 0.3)
+		self:SetNextPrimaryFire(CurTime() + self.Secondary.Delay)
+		self:SetNextSecondaryFire(CurTime() + self.Secondary.Delay)
 
 		local bIronsights = not self:GetIronsights()
 		self:SetIronsights(bIronsights)

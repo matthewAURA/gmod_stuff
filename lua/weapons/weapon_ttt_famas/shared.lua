@@ -1,3 +1,7 @@
+--- Author informations ---
+SWEP.Author = "Zaratusa"
+SWEP.Contact = "http://steamcommunity.com/profiles/76561198032479768"
+
 if SERVER then
 	AddCSLuaFile()
 	resource.AddWorkshop("253736639")
@@ -31,8 +35,8 @@ SWEP.ViewModelFOV = 64
 SWEP.ViewModel = Model("models/weapons/cstrike/c_rif_famas.mdl")
 SWEP.WorldModel = Model("models/weapons/w_rif_famas.mdl")
 
-SWEP.IronSightsPos = Vector(-6.24, -2.757, 1.36)
-SWEP.IronSightsAng = Vector(0, 0, 0)
+SWEP.IronSightsPos = Vector(-6.24, -2.757, 2.4)
+SWEP.IronSightsAng = Vector(2, 0, -1)
 
 --- TTT config values ---
 

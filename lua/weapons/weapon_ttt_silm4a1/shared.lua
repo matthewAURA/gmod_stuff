@@ -22,8 +22,8 @@ SWEP.Base = "weapon_tttbase"
 
 --- Default GMod values ---
 SWEP.Primary.Ammo = "pistol"
-SWEP.Primary.Delay = 0.08
-SWEP.Primary.Recoil	= 1.35
+SWEP.Primary.Delay = 0.114
+SWEP.Primary.Recoil	= 1.36
 SWEP.Primary.Cone = 0.02
 SWEP.Primary.Damage = 18
 SWEP.Primary.Automatic = true
@@ -31,6 +31,7 @@ SWEP.Primary.ClipSize = 30
 SWEP.Primary.ClipMax = 60
 SWEP.Primary.DefaultClip = 30
 SWEP.Primary.Sound = Sound("Weapon_M4A1.Silenced")
+SWEP.Secondary.Delay = 0.3
 
 --- Model settings ---
 SWEP.HoldType = "ar2"
@@ -74,13 +75,15 @@ SWEP.IsSilent = true
 -- If NoSights is true, the weapon won't have ironsights
 SWEP.NoSights = false
 
+-- Change the animation to the silenced one's
 SWEP.PrimaryAnim = ACT_VM_PRIMARYATTACK_SILENCED
 SWEP.ReloadAnim = ACT_VM_RELOAD_SILENCED
 
 -- Add some zoom to ironsights for this gun
 function SWEP:SecondaryAttack()
 	if (self.IronSightsPos and self:GetNextSecondaryFire() <= CurTime()) then
-		self:SetNextSecondaryFire(CurTime() + 0.3)
+		self:SetNextPrimaryFire(CurTime() + self.Secondary.Delay)
+		self:SetNextSecondaryFire(CurTime() + self.Secondary.Delay)
 
 		local bIronsights = not self:GetIronsights()
 		self:SetIronsights(bIronsights)
