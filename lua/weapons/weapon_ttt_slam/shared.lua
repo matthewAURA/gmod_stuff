@@ -7,7 +7,7 @@ if SERVER then
 	resource.AddWorkshop("254177306")
 elseif CLIENT then
 	SWEP.PrintName = "M4 SLAM"
-	SWEP.Slot = 7
+	SWEP.Slot = 6
 	SWEP.Icon = "vgui/ttt/icon_slam"
 
 	-- Equipment menu information is only needed on the client
@@ -50,7 +50,7 @@ SWEP.WorldModel	= Model("models/weapons/w_slam.mdl")
 -- Kind specifies the category this weapon is in. Players can only carry one of
 -- each. Can be: WEAPON_... MELEE, PISTOL, HEAVY, NADE, CARRY, EQUIP1, EQUIP2 or ROLE.
 -- Matching SWEP.Slot values: 0      1       2     3      4      6       7        8
-SWEP.Kind = WEAPON_EQUIP2
+SWEP.Kind = WEAPON_EQUIP1
 
 -- If AutoSpawnable is true and SWEP.Kind is not WEAPON_EQUIP1/2,
 -- then this gun can be spawned as a random weapon.
@@ -127,8 +127,8 @@ function SWEP:ThrowSatchel()
 
 			timer.Simple(holdup + 0.1, function()
 				self:EmitSound(Sound("Weapon_SLAM.SatchelThrow"))
-				self:ChangeActiveSatchel(1)
 				self:TakePrimaryAmmo(1)
+				self:ChangeActiveSatchel(1)
 			end)
 		end
 		owner:SetAnimation(PLAYER_ATTACK1)
@@ -138,8 +138,7 @@ end
 function SWEP:ChangeActiveSatchel(amount)
 	if (IsValid(self)) then
 		self:SetActiveSatchel(self:GetActiveSatchel() + amount)
-		self.State = "NONE"
-		self:ChangeAnimation()
+		self:Deploy()
 	end
 end
 
@@ -186,12 +185,7 @@ function SWEP:StickTripmine()
 						self:EmitSound(Sound("weapons/slam/mine_mode.wav"))
 						self:TakePrimaryAmmo(1)
 
-						if ((self:GetActiveSatchel() <= 0) and self.Weapon:Clip1() == 0 and self.Owner:GetAmmoCount(self.Weapon:GetPrimaryAmmoType()) == 0) then
-							self:Remove()
-						else
-							self.State = "NONE"
-							self:ChangeAnimation()
-						end
+						self:Deploy()
 					end)
 				end
 			end
@@ -219,22 +213,13 @@ function SWEP:SecondaryAttack()
 			end
 		end
 
-		if ((self:GetActiveSatchel() <= 0) and self.Weapon:Clip1() == 0 and self.Owner:GetAmmoCount(self.Weapon:GetPrimaryAmmoType()) == 0) then
-			self:Remove()
-		else
-			self.State = "NONE"
-			self:ChangeAnimation()
-		end
+		self:Deploy()
 	end
 end
 
 if SERVER then
 	function SWEP:Think()
 		self:ChangeAnimation()
-
-		if ((self:GetActiveSatchel() <= 0) and self.Weapon:Clip1() == 0 and self.Owner:GetAmmoCount(self.Weapon:GetPrimaryAmmoType()) == 0) then
-			self:Remove()
-		end
 
 		self:NextThink(CurTime() + 0.25)
 		return true
@@ -261,7 +246,12 @@ function SWEP:CanAttachSLAM()
 end
 
 function SWEP:Deploy()
-	self:ChangeAnimation()
+	if ((self:GetActiveSatchel() <= 0) and self.Weapon:Clip1() == 0) then
+		self:Remove()
+	else
+		self.State = "NONE"
+		self:ChangeAnimation()
+	end
 	return true
 end
 
@@ -282,10 +272,6 @@ function SWEP:ChangeAnimation()
 				self.Weapon:SendWeaponAnim(ACT_SLAM_TRIPMINE_DRAW)
 				self.State = "TRIPMINE"
 			end
-		else
-			if (self:GetActiveSatchel() > 0) then
-				self.Weapon:SendWeaponAnim(ACT_SLAM_STICKWALL_DETONATOR_HOLSTER)
-			end
 		end
 	elseif (self.Weapon:Clip1() > 0) then
 		if (self.State == "TRIPMINE") then
@@ -300,20 +286,11 @@ function SWEP:ChangeAnimation()
 			else
 				self.Weapon:SendWeaponAnim(ACT_SLAM_THROW_ND_DRAW)
 			end
-		else
-			if (self:GetActiveSatchel() > 0) then
-				self.Weapon:SendWeaponAnim(ACT_SLAM_THROW_DETONATOR_HOLSTER)
-			end
 		end
 		self.State = "SATCHEL"
 	else
 		self.Weapon:SendWeaponAnim(ACT_SLAM_DETONATOR_DRAW)
 	end
-end
-
-function SWEP:Holster()
-	self.State = "NONE"
-	return true
 end
 
 function SWEP:OnRemove()

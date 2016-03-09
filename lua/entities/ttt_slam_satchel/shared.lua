@@ -187,9 +187,11 @@ if SERVER then
 	end
 
 	function ENT:OnRemove()
-		local weapon = self:GetPlacedBy()
-		if (IsValid(weapon)) then
-			weapon:ChangeActiveSatchel(-1)
+		if (self:IsActive()) then
+			local weapon = self:GetPlacedBy()
+			if (IsValid(weapon)) then
+				weapon:ChangeActiveSatchel(-1)
+			end
 		end
 		self:SendWarn(false)
 	end
