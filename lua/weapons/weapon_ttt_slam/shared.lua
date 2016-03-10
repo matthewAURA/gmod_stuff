@@ -33,7 +33,7 @@ SWEP.Primary.Delay = 1
 SWEP.Primary.Automatic = false
 SWEP.Primary.ClipSize = cfg.MaxSlams or 5
 SWEP.Primary.DefaultClip = cfg.BoughtSlams or 2
-SWEP.Secondary.Delay = 0.3
+SWEP.Secondary.Delay = 0.5
 SWEP.FiresUnderwater = false
 
 --- Model settings ---
@@ -56,6 +56,9 @@ SWEP.Kind = WEAPON_EQUIP1
 -- then this gun can be spawned as a random weapon.
 SWEP.AutoSpawnable = false
 
+-- The AmmoEnt is the ammo entity that can be picked up when carrying this gun.
+SWEP.AmmoEnt = "none"
+
 -- CanBuy is a table of ROLE_* entries like ROLE_TRAITOR and ROLE_DETECTIVE. If
 -- a role is in this table, those players can buy this.
 SWEP.CanBuy = { ROLE_TRAITOR }
@@ -69,21 +72,28 @@ SWEP.AllowDrop = true
 -- If NoSights is true, the weapon won't have ironsights
 SWEP.NoSights = true
 
+-- Sounds
+local SatchelSound = Sound("weapons/slam/throw.wav")
+local TripmineSound = Sound("weapons/slam/mine_mode.wav")
+local DetonatorSound = Sound("weapons/c4/c4_beep1.wav")
+
+local NONE, SATCHEL, TRIPMINE = 0, 1, 2 -- the three possible animation states of the SLAM
+
 function SWEP:SetupDataTables()
 	self:NetworkVar("Int", 0, "ActiveSatchel")
 end
 
 function SWEP:Initialize()
-	self.State = "NONE"
+	self.State = NONE
 	self:SetActiveSatchel(0)
 end
 
 function SWEP:PrimaryAttack()
-	if (self:CanPrimaryAttack()) then
+	if (self:CanPrimaryAttack() and self:GetNextPrimaryFire() <= CurTime()) then
 		self:SetNextPrimaryFire(CurTime() + self.Primary.Delay)
 		self:SetNextSecondaryFire(CurTime() + self.Primary.Delay)
 
-		if (self.State == "SATCHEL") then
+		if (self.State == SATCHEL) then
 			self:ThrowSatchel()
 		else
 			self:StickTripmine()
@@ -106,6 +116,7 @@ function SWEP:ThrowSatchel()
 				holdup = self.Owner:GetViewModel():SequenceDuration()
 				timer.Simple(holdup, function() if (IsValid(self)) then self.Weapon:SendWeaponAnim(ACT_SLAM_THROW_THROW_ND2) end end)
 			end
+			timer.Simple(holdup / 2, function() if (IsValid(self)) then self:EmitSound(SatchelSound) end end) -- played before the second throw animation
 
 			local src = owner:GetShootPos()
 			local ang = owner:GetAimVector()
@@ -126,7 +137,6 @@ function SWEP:ThrowSatchel()
 			end
 
 			timer.Simple(holdup + 0.1, function()
-				self:EmitSound(Sound("Weapon_SLAM.SatchelThrow"))
 				self:TakePrimaryAmmo(1)
 				self:ChangeActiveSatchel(1)
 			end)
@@ -182,7 +192,7 @@ function SWEP:StickTripmine()
 					end
 
 					timer.Simple(holdup + 0.1, function()
-						self:EmitSound(Sound("weapons/slam/mine_mode.wav"))
+						self:EmitSound(TripmineSound)
 						self:TakePrimaryAmmo(1)
 
 						self:Deploy()
@@ -195,17 +205,17 @@ function SWEP:StickTripmine()
 end
 
 function SWEP:SecondaryAttack()
-	if (SERVER and self:GetActiveSatchel() > 0 and self:CanSecondaryAttack()) then
+	if (SERVER and self:GetActiveSatchel() > 0 and self:GetNextSecondaryFire() <= CurTime()) then
 		self:SetNextPrimaryFire(CurTime() + self.Secondary.Delay)
 		self:SetNextSecondaryFire(CurTime() + self.Secondary.Delay)
-		if (self.State == "SATCHEL") then
+		if (self.State == SATCHEL) then
 			self.Weapon:SendWeaponAnim(ACT_SLAM_THROW_DETONATE)
-		elseif (self.State == "TRIPMINE") then
+		elseif (self.State == TRIPMINE) then
 			self.Weapon:SendWeaponAnim(ACT_SLAM_STICKWALL_DETONATE)
 		else
 			self.Weapon:SendWeaponAnim(ACT_SLAM_DETONATOR_DETONATE)
 		end
-		self:EmitSound(Sound("weapons/c4/c4_beep1.wav"))
+		self:EmitSound(DetonatorSound)
 
 		for _, slam in pairs(ents.FindByClass("ttt_slam_satchel")) do
 			if (slam:IsActive() and slam:GetPlacedBy() == self) then
@@ -214,15 +224,6 @@ function SWEP:SecondaryAttack()
 		end
 
 		self:Deploy()
-	end
-end
-
-if SERVER then
-	function SWEP:Think()
-		self:ChangeAnimation()
-
-		self:NextThink(CurTime() + 0.25)
-		return true
 	end
 end
 
@@ -245,52 +246,61 @@ function SWEP:CanAttachSLAM()
 	return result
 end
 
-function SWEP:Deploy()
-	if ((self:GetActiveSatchel() <= 0) and self.Weapon:Clip1() == 0) then
-		self:Remove()
-	else
-		self.State = "NONE"
-		self:ChangeAnimation()
-	end
-	return true
-end
-
 function SWEP:ChangeAnimation()
 	if (self:CanAttachSLAM()) then
-		if (self.State == "SATCHEL") then
+		if (self.State == SATCHEL) then
 			if (self:GetActiveSatchel() > 0) then
 				self.Weapon:SendWeaponAnim(ACT_SLAM_THROW_TO_STICKWALL)
 			else
 				self.Weapon:SendWeaponAnim(ACT_SLAM_THROW_TO_TRIPMINE_ND)
 			end
-			self.State = "TRIPMINE"
-		elseif (self.State == "NONE") then
+			self.State = TRIPMINE
+		elseif (self.State == NONE) then
 			if (self:GetActiveSatchel() > 0) then
 				self.Weapon:SendWeaponAnim(ACT_SLAM_DETONATOR_THROW_DRAW)
-				self.State = "SATCHEL"
+				self.State = SATCHEL
 			else
 				self.Weapon:SendWeaponAnim(ACT_SLAM_TRIPMINE_DRAW)
-				self.State = "TRIPMINE"
+				self.State = TRIPMINE
 			end
 		end
 	elseif (self.Weapon:Clip1() > 0) then
-		if (self.State == "TRIPMINE") then
+		if (self.State == TRIPMINE) then
 			if (self:GetActiveSatchel() > 0) then
 				self.Weapon:SendWeaponAnim(ACT_SLAM_STICKWALL_TO_THROW)
 			else
 				self.Weapon:SendWeaponAnim(ACT_SLAM_STICKWALL_TO_THROW_ND)
 			end
-		elseif (self.State == "NONE") then
+		elseif (self.State == NONE) then
 			if (self:GetActiveSatchel() > 0) then
 				self.Weapon:SendWeaponAnim(ACT_SLAM_DETONATOR_THROW_DRAW)
 			else
 				self.Weapon:SendWeaponAnim(ACT_SLAM_THROW_ND_DRAW)
 			end
 		end
-		self.State = "SATCHEL"
+		self.State = SATCHEL
 	else
 		self.Weapon:SendWeaponAnim(ACT_SLAM_DETONATOR_DRAW)
 	end
+end
+
+if SERVER then
+	function SWEP:Think()
+		self:ChangeAnimation()
+
+		self:NextThink(CurTime() + 0.25)
+		return true
+	end
+end
+
+function SWEP:Deploy()
+	if ((self:GetActiveSatchel() <= 0) and self.Weapon:Clip1() == 0) then
+		self:Remove()
+	else
+		self.State = NONE
+		self:ChangeAnimation()
+	end
+	return true
 end
 
 function SWEP:OnRemove()
