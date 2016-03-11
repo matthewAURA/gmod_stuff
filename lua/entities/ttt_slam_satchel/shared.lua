@@ -119,6 +119,11 @@ function ENT:OnTakeDamage(dmginfo)
 		-- it can still explode, even if defused
 		self:SetHealth(self:Health() - dmginfo:GetDamage())
 		if (self:Health() <= 0) then
+			-- the attacker should get the kill
+			local attacker = dmginfo:GetAttacker()
+			if (IsValid(attacker)) then
+				self:SetPlacer(attacker)
+			end
 			self:StartExplode()
 		end
 	end

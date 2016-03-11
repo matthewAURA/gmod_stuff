@@ -106,17 +106,11 @@ function SWEP:ThrowSatchel()
 	if (SERVER and IsValid(owner)) then
 		local slam = ents.Create("ttt_slam_satchel")
 		if (IsValid(slam)) then
-			local holdup
 			if (self:GetActiveSatchel() > 0) then
-				self.Weapon:SendWeaponAnim(ACT_SLAM_THROW_THROW)
-				holdup = self.Owner:GetViewModel():SequenceDuration()
-				timer.Simple(holdup, function() if (IsValid(self)) then self.Weapon:SendWeaponAnim(ACT_SLAM_THROW_THROW2) end end)
+				self:AnimateAttack(ACT_SLAM_THROW_THROW, ACT_SLAM_THROW_THROW2, SatchelSound, 1)
 			else
-				self.Weapon:SendWeaponAnim(ACT_SLAM_THROW_THROW_ND)
-				holdup = self.Owner:GetViewModel():SequenceDuration()
-				timer.Simple(holdup, function() if (IsValid(self)) then self.Weapon:SendWeaponAnim(ACT_SLAM_THROW_THROW_ND2) end end)
+				self:AnimateAttack(ACT_SLAM_THROW_THROW_ND, ACT_SLAM_THROW_THROW_ND2, SatchelSound, 1)
 			end
-			timer.Simple(holdup / 2, function() if (IsValid(self)) then self:EmitSound(SatchelSound) end end) -- played before the second throw animation
 
 			local src = owner:GetShootPos()
 			local ang = owner:GetAimVector()
@@ -130,25 +124,13 @@ function SWEP:ThrowSatchel()
 
 			slam.fingerprints = self.fingerprints
 
-			slam:PhysWake()
 			local phys = slam:GetPhysicsObject()
 			if (IsValid(phys)) then
+				phys:Wake()
 				phys:SetVelocity(throw)
 			end
-
-			timer.Simple(holdup + 0.1, function()
-				self:TakePrimaryAmmo(1)
-				self:ChangeActiveSatchel(1)
-			end)
 		end
 		owner:SetAnimation(PLAYER_ATTACK1)
-	end
-end
-
-function SWEP:ChangeActiveSatchel(amount)
-	if (IsValid(self)) then
-		self:SetActiveSatchel(self:GetActiveSatchel() + amount)
-		self:Deploy()
 	end
 end
 
@@ -165,15 +147,10 @@ function SWEP:StickTripmine()
 			if (IsValid(slam)) then
 				local tr_ent = util.TraceEntity({start=spos, endpos=epos, filter=ignore, mask=MASK_SOLID}, slam)
 				if (tr_ent.HitWorld) then
-					local holdup
 					if (self:GetActiveSatchel() > 0) then
-						self.Weapon:SendWeaponAnim(ACT_SLAM_STICKWALL_ATTACH)
-						holdup = self.Owner:GetViewModel():SequenceDuration()
-						timer.Simple(holdup, function() if (IsValid(self)) then self.Weapon:SendWeaponAnim(ACT_SLAM_STICKWALL_ATTACH2) end end)
+						self:AnimateAttack(ACT_SLAM_STICKWALL_ATTACH, ACT_SLAM_STICKWALL_ATTACH2, TripmineSound, 0)
 					else
-						self.Weapon:SendWeaponAnim(ACT_SLAM_TRIPMINE_ATTACH)
-						holdup = self.Owner:GetViewModel():SequenceDuration()
-						timer.Simple(holdup, function() if (IsValid(self)) then self.Weapon:SendWeaponAnim(ACT_SLAM_TRIPMINE_ATTACH2) end end)
+						self:AnimateAttack(ACT_SLAM_TRIPMINE_ATTACH, ACT_SLAM_TRIPMINE_ATTACH2, TripmineSound, 0)
 					end
 
 					local ang = tr_ent.HitNormal:Angle()
@@ -185,18 +162,12 @@ function SWEP:StickTripmine()
 
 					slam.fingerprints = self.fingerprints
 
-					-- slam shouldn't move on the wall
+					-- SLAM shouldn't move on the wall
 					local phys = slam:GetPhysicsObject()
 					if (IsValid(phys)) then
+						phys:Wake()
 						phys:EnableMotion(false)
 					end
-
-					timer.Simple(holdup + 0.1, function()
-						self:EmitSound(TripmineSound)
-						self:TakePrimaryAmmo(1)
-
-						self:Deploy()
-					end)
 				end
 			end
 		end
@@ -204,8 +175,38 @@ function SWEP:StickTripmine()
 	end
 end
 
+function SWEP:AnimateAttack(animation1, animation2, sound, newSatchel)
+	self.Weapon:SendWeaponAnim(animation1)
+	local holdup = self.Owner:GetViewModel():SequenceDuration()
+
+	timer.Simple(holdup * 0.6, function()
+		if (IsValid(self)) then
+			self:EmitSound(sound)
+		end
+	end)
+	timer.Simple(holdup, function()
+		if (IsValid(self)) then
+			self.Weapon:SendWeaponAnim(animation2)
+		end
+	end)
+	timer.Simple(holdup + 0.1, function()
+		if (IsValid(self)) then
+			self:TakePrimaryAmmo(1)
+			self:ChangeActiveSatchel(newSatchel)
+		end
+	end)
+end
+
+function SWEP:ChangeActiveSatchel(amount)
+	if (IsValid(self)) then
+		self:SetActiveSatchel(self:GetActiveSatchel() + amount)
+		self:Deploy()
+	end
+end
+
 function SWEP:SecondaryAttack()
-	if (SERVER and self:GetActiveSatchel() > 0 and self:GetNextSecondaryFire() <= CurTime()) then
+	local owner = self.Owner
+	if (SERVER and self:GetActiveSatchel() > 0 and self:GetNextSecondaryFire() <= CurTime() and IsValid(owner)) then
 		self:SetNextPrimaryFire(CurTime() + self.Secondary.Delay)
 		self:SetNextSecondaryFire(CurTime() + self.Secondary.Delay)
 		if (self.State == SATCHEL) then
@@ -219,6 +220,7 @@ function SWEP:SecondaryAttack()
 
 		for _, slam in pairs(ents.FindByClass("ttt_slam_satchel")) do
 			if (slam:IsActive() and slam:GetPlacedBy() == self) then
+				slam:SetPlacer(owner)
 				slam:StartExplode()
 			end
 		end
@@ -247,40 +249,43 @@ function SWEP:CanAttachSLAM()
 end
 
 function SWEP:ChangeAnimation()
-	if (self:CanAttachSLAM()) then
-		if (self.State == SATCHEL) then
-			if (self:GetActiveSatchel() > 0) then
-				self.Weapon:SendWeaponAnim(ACT_SLAM_THROW_TO_STICKWALL)
-			else
-				self.Weapon:SendWeaponAnim(ACT_SLAM_THROW_TO_TRIPMINE_ND)
-			end
-			self.State = TRIPMINE
-		elseif (self.State == NONE) then
-			if (self:GetActiveSatchel() > 0) then
-				self.Weapon:SendWeaponAnim(ACT_SLAM_DETONATOR_THROW_DRAW)
-				self.State = SATCHEL
-			else
-				self.Weapon:SendWeaponAnim(ACT_SLAM_TRIPMINE_DRAW)
+	-- just change the animation, when the weapon is currently active
+	if (IsValid(self.Owner) and self.Owner:GetActiveWeapon() == self.Weapon) then
+		if (self:CanAttachSLAM()) then
+			if (self.State == SATCHEL) then
+				if (self:GetActiveSatchel() > 0) then
+					self.Weapon:SendWeaponAnim(ACT_SLAM_THROW_TO_STICKWALL)
+				else
+					self.Weapon:SendWeaponAnim(ACT_SLAM_THROW_TO_TRIPMINE_ND)
+				end
 				self.State = TRIPMINE
+			elseif (self.State == NONE) then
+				if (self:GetActiveSatchel() > 0) then
+					self.Weapon:SendWeaponAnim(ACT_SLAM_DETONATOR_THROW_DRAW)
+					self.State = SATCHEL
+				else
+					self.Weapon:SendWeaponAnim(ACT_SLAM_TRIPMINE_DRAW)
+					self.State = TRIPMINE
+				end
 			end
+		elseif (self.Weapon:Clip1() > 0) then
+			if (self.State == TRIPMINE) then
+				if (self:GetActiveSatchel() > 0) then
+					self.Weapon:SendWeaponAnim(ACT_SLAM_STICKWALL_TO_THROW)
+				else
+					self.Weapon:SendWeaponAnim(ACT_SLAM_STICKWALL_TO_THROW_ND)
+				end
+			elseif (self.State == NONE) then
+				if (self:GetActiveSatchel() > 0) then
+					self.Weapon:SendWeaponAnim(ACT_SLAM_DETONATOR_THROW_DRAW)
+				else
+					self.Weapon:SendWeaponAnim(ACT_SLAM_THROW_ND_DRAW)
+				end
+			end
+			self.State = SATCHEL
+		else
+			self.Weapon:SendWeaponAnim(ACT_SLAM_DETONATOR_DRAW)
 		end
-	elseif (self.Weapon:Clip1() > 0) then
-		if (self.State == TRIPMINE) then
-			if (self:GetActiveSatchel() > 0) then
-				self.Weapon:SendWeaponAnim(ACT_SLAM_STICKWALL_TO_THROW)
-			else
-				self.Weapon:SendWeaponAnim(ACT_SLAM_STICKWALL_TO_THROW_ND)
-			end
-		elseif (self.State == NONE) then
-			if (self:GetActiveSatchel() > 0) then
-				self.Weapon:SendWeaponAnim(ACT_SLAM_DETONATOR_THROW_DRAW)
-			else
-				self.Weapon:SendWeaponAnim(ACT_SLAM_THROW_ND_DRAW)
-			end
-		end
-		self.State = SATCHEL
-	else
-		self.Weapon:SendWeaponAnim(ACT_SLAM_DETONATOR_DRAW)
 	end
 end
 
