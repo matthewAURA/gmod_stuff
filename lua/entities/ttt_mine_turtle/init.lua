@@ -14,17 +14,24 @@ function ENT:Think()
 		if (!self.HelloPlayed) then
 			for _, ent in ipairs(ents.FindInSphere(self:GetPos(), self.ScanRadius)) do
 				if (IsValid(ent) and ent:IsPlayer() and !ent:IsSpec()) then
-					self:EmitSound(self.ClickSound)
-					timer.Simple(0.15, function() if (IsValid(self)) then sound.Play(self.HelloSound, self:GetPos(), 100, math.random(95, 105), 1) end end)
-					self.HelloPlayed = true
+					-- check if the target is visible
+					local spos = self:GetPos() + Vector(0, 0, 10)
+					local epos = ent:GetPos() + Vector(0, 0, 10)
 
-					timer.Simple(0.85, function() if (IsValid(self)) then self:StartExplode(true) end end)
-					break
+					local tr = util.TraceLine({start=spos, endpos=epos, filter=self, mask=MASK_SOLID})
+					if (!tr.HitWorld and ent:Alive()) then
+						self:EmitSound(self.ClickSound)
+						timer.Simple(0.15, function() if (IsValid(self)) then sound.Play(self.HelloSound, self:GetPos(), 100, math.random(95, 105), 1) end end)
+						self.HelloPlayed = true
+
+						timer.Simple(0.85, function() if (IsValid(self)) then self:StartExplode(true) end end)
+						break
+					end
 				end
 			end
 		end
 
-		self:NextThink(CurTime() + 0.1)
+		self:NextThink(CurTime() + 0.05)
 		return true
 	end
 end
