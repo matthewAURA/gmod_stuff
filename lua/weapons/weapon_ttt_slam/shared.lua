@@ -2,26 +2,9 @@
 SWEP.Author = "Zaratusa"
 SWEP.Contact = "http://steamcommunity.com/profiles/76561198032479768"
 
-if SERVER then
-	AddCSLuaFile()
-	resource.AddWorkshop("254177306")
-elseif CLIENT then
-	SWEP.PrintName = "M4 SLAM"
-	SWEP.Slot = 6
-	SWEP.Icon = "vgui/ttt/icon_slam"
-
-	-- Equipment menu information is only needed on the client
-	SWEP.EquipMenuData = {
-		type = "item_weapon",
-		desc = "A Mine which can be manually detonated\nor sticked on a wall as a tripmine.\n\nNOTE: Can be shot and destroyed by everyone."
-	};
-end
-
-local cfg
+local cfg = { }
 if file.Exists("ttt_weapons/slam/config.txt", "DATA") then
 	cfg = util.JSONToTable(file.Read("ttt_weapons/slam/config.txt", "DATA"))
-else
-	cfg = { }
 end
 
 -- Always derive from weapon_tttbase
@@ -29,7 +12,7 @@ SWEP.Base = "weapon_tttbase"
 
 --- Default GMod values ---
 SWEP.Primary.Ammo = "none"
-SWEP.Primary.Delay = 1
+SWEP.Primary.Delay = 1.5
 SWEP.Primary.Automatic = false
 SWEP.Primary.ClipSize = cfg.MaxSlams or 5
 SWEP.Primary.DefaultClip = cfg.BoughtSlams or 2
@@ -155,19 +138,13 @@ function SWEP:StickTripmine()
 
 					local ang = tr_ent.HitNormal:Angle()
 					ang.p = ang.p + 90
+
 					slam:SetPos(tr_ent.HitPos + (tr_ent.HitNormal * 3))
 					slam:SetAngles(ang)
 					slam:SetPlacer(owner)
 					slam:Spawn()
 
 					slam.fingerprints = self.fingerprints
-
-					-- SLAM shouldn't move on the wall
-					local phys = slam:GetPhysicsObject()
-					if (IsValid(phys)) then
-						phys:Wake()
-						phys:EnableMotion(false)
-					end
 				end
 			end
 		end
@@ -221,7 +198,7 @@ function SWEP:SecondaryAttack()
 		for _, slam in pairs(ents.FindByClass("ttt_slam_satchel")) do
 			if (slam:IsActive() and slam:GetPlacedBy() == self) then
 				slam:SetPlacer(owner)
-				slam:StartExplode()
+				slam:StartExplode(true)
 			end
 		end
 
@@ -289,15 +266,6 @@ function SWEP:ChangeAnimation()
 	end
 end
 
-if SERVER then
-	function SWEP:Think()
-		self:ChangeAnimation()
-
-		self:NextThink(CurTime() + 0.25)
-		return true
-	end
-end
-
 function SWEP:Deploy()
 	if ((self:GetActiveSatchel() <= 0) and self.Weapon:Clip1() == 0) then
 		self:Remove()
@@ -306,12 +274,6 @@ function SWEP:Deploy()
 		self:ChangeAnimation()
 	end
 	return true
-end
-
-function SWEP:OnRemove()
-	if (CLIENT and IsValid(self.Owner) and self.Owner == LocalPlayer() and self.Owner:Alive()) then
-		RunConsoleCommand("lastinv")
-	end
 end
 
 -- Reload does nothing
