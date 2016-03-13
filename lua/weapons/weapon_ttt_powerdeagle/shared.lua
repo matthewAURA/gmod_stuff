@@ -23,7 +23,7 @@ elseif CLIENT then
 		SWEP.EquipMenuData = {
 			type = "item_weapon",
 			desc = "Shoot a traitor, kill a traitor.\nShoot an innocent or detective, kill yourself.\nBe careful."
-		};
+		}
 	elseif SB then
 		SWEP.Slot = 1
 	end
@@ -121,7 +121,7 @@ function SWEP:PrimaryAttack()
 		local owner = self.Owner
 		local tr = util.TraceLine(util.GetPlayerTrace(owner))
 
-		if (SERVER and tr.Entity.IsPlayer() and (tr.Entity:IsRole(ROLE_INNOCENT) or tr.Entity:IsRole(ROLE_DETECTIVE))) then
+		if (SERVER and tr.Entity:IsPlayer() and (tr.Entity:IsRole(ROLE_INNOCENT) or tr.Entity:IsRole(ROLE_DETECTIVE))) then
 			local dmginfo = DamageInfo()
 			dmginfo:SetDamage(1000)
 			dmginfo:SetAttacker(owner)
@@ -138,7 +138,7 @@ function SWEP:PrimaryAttack()
 			bullet.Dir = owner:GetAimVector()
 			bullet.AmmoType = self.Primary.Ammo
 
-			if (tr.Entity.IsPlayer() and tr.Entity:IsRole(ROLE_TRAITOR)) then
+			if (tr.Entity:IsPlayer() and tr.Entity:IsRole(ROLE_TRAITOR)) then
 				bullet.Force = 1000
 				bullet.Damage = 1000
 			else
