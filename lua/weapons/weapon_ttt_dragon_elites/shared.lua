@@ -2,47 +2,23 @@
 SWEP.Author = "Zaratusa"
 SWEP.Contact = "http://steamcommunity.com/profiles/76561198032479768"
 
-local TTT = false
-local SB = false
-if (gmod.GetGamemode().Name == "Trouble in Terrorist Town") then
-	TTT = true
-elseif gmod.GetGamemode().Name == "Sandbox" then
-	SB = true
-end
-
 if SERVER then
 	AddCSLuaFile()
 	resource.AddWorkshop("639762141")
 elseif CLIENT then
 	SWEP.PrintName = "Dragon Elites"
 	SWEP.Slot = 1
-	if TTT then
-		SWEP.Icon = "vgui/ttt/icon_dragon_elites"
+	SWEP.Icon = "vgui/ttt/icon_dragon_elites"
 
-		-- Equipment menu information is only needed on the client
-		SWEP.EquipMenuData = {
-			type = "item_weapon",
-			desc = "Dual Dragon Elites,\nwith one additional magazine.\n\nGet the Style."
-		};
-	end
+	-- Equipment menu information is only needed on the client
+	SWEP.EquipMenuData = {
+		type = "item_weapon",
+		desc = "Dual Dragon Elites,\nwith one additional magazine.\n\nGet the Style."
+	}
 end
 
---- Gamemode dependent settings ---
-if TTT then
-	SWEP.Base = "weapon_tttbase"
-elseif SB then
-	SWEP.Base = "weapon_base"
-	SWEP.Category = "TTT"
-	SWEP.Purpose = "A weapon originally created for Traitors and Detectives in TTT."
-	SWEP.Spawnable = true
-	SWEP.AdminOnly = false
-	SWEP.DrawAmmo = false
-	SWEP.DrawCrosshair = true
-
-	SWEP.Secondary.Ammo = "none"
-	SWEP.Secondary.ClipSize = -1
-	SWEP.Secondary.DefaultClip = -1
-end
+-- Always derive from weapon_tttbase
+SWEP.Base = "weapon_tttbase"
 
 --- Default GMod values ---
 SWEP.Primary.Ammo = "pistol"
@@ -64,7 +40,7 @@ SWEP.HoldType = "duel"
 SWEP.UseHands = true
 SWEP.ViewModelFlip = true
 SWEP.ViewModelFOV = 74
-SWEP.ViewModel  = Model("models/weapons/zaratusa/dragon_elites/v_dragon_elites.mdl")
+SWEP.ViewModel = Model("models/weapons/zaratusa/dragon_elites/v_dragon_elites.mdl")
 SWEP.WorldModel = Model("models/weapons/zaratusa/dragon_elites/w_dragon_elites.mdl")
 
 --- TTT config values ---
@@ -106,26 +82,107 @@ function SWEP:Precache()
 	util.PrecacheSound("Dragon_Elite.Elite_deploy")
 end
 
-if SB then
-	function SWEP:PrimaryAttack()
-		if (self:CanPrimaryAttack()) then
-			self:SetNextPrimaryFire(CurTime() + self.Primary.Delay)
-			self:SetNextSecondaryFire(CurTime() + self.Primary.Delay)
+-- copied from weapon_tttbase and modified for the correct animaton
+function SWEP:Initialize()
+	if (CLIENT and self:Clip1() == -1) then
+		self:SetClip1(self.Primary.DefaultClip)
+	elseif (SERVER) then
+		self.fingerprints = {}
+		self:SetIronsights(false)
+	end
 
-			self:SendWeaponAnim(ACT_VM_PRIMARYATTACK)
-			if SERVER then
-				sound.Play(self.Primary.Sound, self:GetPos(), self.Primary.SoundLevel)
-			end
+	self:SetDeploySpeed(self.DeploySpeed)
 
-			self:ShootBullet(self.Primary.Damage, self.Primary.Recoil, self.Primary.NumShots, self.Primary.Cone)
-			self:TakePrimaryAmmo(1)
+	-- compat for gmod update
+	if (self.SetHoldType) then
+		self:SetHoldType(self.HoldType or "pistol")
+	end
 
-			if (IsValid(owner) and !owner:IsNPC() and owner.ViewPunch) then
-				owner:ViewPunch(Angle(math.Rand(-0.2,-0.1) * self.Primary.Recoil, math.Rand(-0.1,0.1) * self.Primary.Recoil, 0))
-			end
+	self.LastShot = 0
+	self.AnimateRight = true
+end
+
+-- copied from weapon_tttbase and modified for the correct sound
+function SWEP:PrimaryAttack()
+	if (self:CanPrimaryAttack()) then
+		self:SetNextPrimaryFire(CurTime() + self.Primary.Delay)
+		self:SetNextSecondaryFire(CurTime() + self.Primary.Delay)
+
+		if SERVER then
+			sound.Play(self.Primary.Sound, self:GetPos(), self.Primary.SoundLevel)
+		end
+
+		self:ShootBullet(self.Primary.Damage, self.Primary.Recoil, self.Primary.NumShots, self:GetPrimaryCone())
+		self.LastShot = CurTime()
+		self:TakePrimaryAmmo(1)
+
+		local owner = self.Owner
+		if (IsValid(owner) and !owner:IsNPC() and owner.ViewPunch) then
+			owner:ViewPunch(Angle(math.Rand(-0.2,-0.1) * self.Primary.Recoil, math.Rand(-0.1,0.1) * self.Primary.Recoil, 0))
+		end
+	end
+end
+
+local sparkle = CLIENT and CreateConVar("ttt_crazy_sparks", "0", FCVAR_ARCHIVE)
+-- copied from weapon_tttbase and modified for the correct animaton
+function SWEP:ShootBullet(dmg, recoil, numbul, cone)
+	self:ShootEffects()
+
+	if (IsFirstTimePredicted()) then
+		local sights = self:GetIronsights()
+
+		numbul = numbul or 1
+		cone = cone or 0.01
+
+		local bullet = {}
+		bullet.Num = numbul
+		bullet.Src = self.Owner:GetShootPos()
+		bullet.Dir = self.Owner:GetAimVector()
+		bullet.Spread = Vector( cone, cone, 0 )
+		bullet.Tracer = 4
+		bullet.TracerName = self.Tracer or "Tracer"
+		bullet.Force = 10
+		bullet.Damage = dmg
+		if CLIENT and sparkle:GetBool() then
+			bullet.Callback = Sparklies
+		end
+
+		self.Owner:FireBullets(bullet)
+
+		-- Owner can die after firebullets
+		if (IsValid(self.Owner) and self.Owner:Alive() and (!self.Owner:IsNPC())
+			and ((game.SinglePlayer() and SERVER)
+				or ((!game.SinglePlayer()) and CLIENT and IsFirstTimePredicted()))) then
+			-- reduce recoil if ironsighting
+			recoil = sights and (recoil * 0.6) or recoil
+
+			local eyeang = self.Owner:EyeAngles()
+			eyeang.pitch = eyeang.pitch - recoil
+			self.Owner:SetEyeAngles(eyeang)
+		end
+	end
+end
+
+function SWEP:ShootEffects()
+	local sequence
+	if self.AnimateRight then
+		if (CurTime() - self.LastShot > 0.3) then
+			sequence = "shoot_right1"
+		else
+			sequence = "shoot_right2"
+		end
+	else
+		if (CurTime() - self.LastShot > 0.3) then
+			sequence = "shoot_left1"
+		else
+			sequence = "shoot_left2"
 		end
 	end
 
-	function SWEP:SecondaryAttack()
-	end
+	local viewModel = self.Owner:GetViewModel()
+	viewModel:ResetSequence(viewModel:LookupSequence(sequence))
+	self.AnimateRight = !self.AnimateRight
+
+	self.Owner:MuzzleFlash()
+	self.Owner:SetAnimation(PLAYER_ATTACK1)
 end
