@@ -114,6 +114,8 @@ function SWEP:PrimaryAttack()
 		self:SetNextSecondaryFire(CurTime() + self.Primary.Delay)
 
 		self:SendWeaponAnim(ACT_VM_PRIMARYATTACK)
+		self.Owner:MuzzleFlash()
+		self.Owner:SetAnimation(PLAYER_ATTACK1)
 		if SERVER then
 			sound.Play(self.Primary.Sound, self:GetPos(), self.Primary.SoundLevel)
 		end

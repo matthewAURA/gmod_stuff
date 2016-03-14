@@ -88,7 +88,7 @@ function SWEP:PrimaryAttack()
 		self:SetNextPrimaryFire(CurTime() + self.Primary.Delay)
 		self:SetNextSecondaryFire(CurTime() + self.Primary.Delay)
 
-		self:SendWeaponAnim(self.PrimaryAnim)
+		self:SendWeaponAnim(ACT_VM_PRIMARYATTACK)
 		self.Owner:MuzzleFlash()
 		self.Owner:SetAnimation(PLAYER_ATTACK1)
 		if SERVER then
