@@ -1,0 +1,7 @@
+"VertexLitGeneric"
+{
+	"$baseTexture" "models/weapons/v_models/wrist_blades/glove1"
+	"$bumpmap" "models/weapons/v_models/wrist_blades/glove1_normal"
+	"$envmap" "env_cubemap"
+	"$normalmapalphaenvmapmask" "models/weapons/v_models/wrist_blades/glove1_ref"
+}
