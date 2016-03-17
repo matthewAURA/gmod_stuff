@@ -42,19 +42,10 @@ SWEP.HeadshotMultiplier = 2.97
 SWEP.HoldType = "duel"
 
 SWEP.UseHands = true
-SWEP.ViewModelFlip = true
+SWEP.ViewModelFlip = false
 SWEP.ViewModelFOV = 74
 SWEP.ViewModel = Model("models/weapons/zaratusa/dragon_elites/v_dragon_elites.mdl")
 SWEP.WorldModel = Model("models/weapons/zaratusa/dragon_elites/w_dragon_elites.mdl")
-
--- Precache sounds
-function SWEP:Precache()
-	util.PrecacheSound("Dragon_Elite.Single")
-	util.PrecacheSound("Dragon_Elite.Elite_reloadstart")
-	util.PrecacheSound("Dragon_Elite.Elite_leftclipin")
-	util.PrecacheSound("Dragon_Elite.Elite_rightclipin")
-	util.PrecacheSound("Dragon_Elite.Elite_deploy")
-end
 
 function SWEP:Initialize()
 	self:SetDeploySpeed(self.DeploySpeed)
@@ -63,8 +54,28 @@ function SWEP:Initialize()
 		self:SetHoldType(self.HoldType or "pistol")
 	end
 
+	PrecacheParticleSystem("smoke_trail")
+
 	self.LastShot = 0
 	self.AnimateRight = true
+	self:SetNWInt("ShotsFired", 0)
+
+	timer.Create("DragonElitesSmokeTrail", 0.5, 0, function()
+		if (IsValid(self)) then
+			local diff = CurTime() - self.LastShot
+			local shotsfired = self:GetNWInt("ShotsFired")
+			if (diff > 1.25 and shotsfired > math.Rand(5, 7)) then
+				if (IsValid(self.Owner) and self.Owner:GetActiveWeapon() == self.Weapon) then
+					local viewmodel = self.Owner:GetViewModel()
+					ParticleEffectAttach("smoke_trail", PATTACH_POINT_FOLLOW, viewmodel, 1)
+					ParticleEffectAttach("smoke_trail", PATTACH_POINT_FOLLOW, viewmodel, 2)
+					self:SetNWInt("ShotsFired", 0)
+				end
+			elseif (diff > 5 and shotsfired < 8) then
+				self:SetNWInt("ShotsFired", 0)
+			end
+		end
+	end)
 end
 
 function SWEP:PrimaryAttack()
@@ -72,13 +83,18 @@ function SWEP:PrimaryAttack()
 		self:SetNextPrimaryFire(CurTime() + self.Primary.Delay)
 		self:SetNextSecondaryFire(CurTime() + self.Primary.Delay)
 
-		self.Weapon:EmitSound(self.Primary.Sound)
+		local owner = self.Owner
+		owner:GetViewModel():StopParticles()
+
+		if SERVER then
+			sound.Play(self.Primary.Sound, self:GetPos())
+		end
 
 		self:ShootBullet(self.Primary.Damage, self.Primary.NumShots, self.Primary.Cone)
+		self:SetNWInt("ShotsFired", self:GetNWInt("ShotsFired") + 1)
 		self.LastShot = CurTime()
 		self:TakePrimaryAmmo(1)
 
-		local owner = self.Owner
 		if (IsValid(owner) and !owner:IsNPC() and owner.ViewPunch) then
 			owner:ViewPunch(Angle(math.Rand(-0.2,-0.1) * self.Primary.Recoil, math.Rand(-0.1,0.1) * self.Primary.Recoil, 0))
 		end
@@ -110,4 +126,20 @@ function SWEP:ShootEffects()
 
 	self.Owner:MuzzleFlash()
 	self.Owner:SetAnimation(PLAYER_ATTACK1)
+end
+
+function SWEP:Reload()
+	if (self:Clip1() < self.Primary.ClipSize and self.Owner:GetAmmoCount(self.Primary.Ammo) > 0) then
+		self:DefaultReload(ACT_VM_RELOAD)
+		timer.Simple(0.2, function() if (IsValid(self) and IsValid(self.Owner)) then self.Owner:GetViewModel():StopParticles() end end)
+	end
+end
+
+function SWEP:Deploy()
+	self:SetNWInt("ShotsFired", 0)
+	return true
+end
+
+function SWEP:OnRemove()
+	timer.Remove("DragonElitesSmokeTrail")
 end

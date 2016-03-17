@@ -14,4 +14,12 @@ function SWEP:Think()
 	if (IsValid(self.Owner) and self.Owner:GetNWInt("PredatorStacks") > self.MinimumPredatorStacks and self.NextSpeedDecrease < CurTime()) then
 		self:ChangePredatorStacks(-1)
 	end
+
+	local idletime = self:GetNWFloat("NextIdle")
+
+	if (idletime > 0 and CurTime() > idletime) then
+		local vm = self.Owner:GetViewModel()
+		vm:SendViewModelMatchingSequence(vm:LookupSequence("idle"))
+		self:UpdateNextIdle()
+	end
 end

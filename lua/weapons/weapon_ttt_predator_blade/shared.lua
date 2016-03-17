@@ -7,7 +7,7 @@ SWEP.Base = "weapon_tttbase"
 
 --- Default GMod values ---
 SWEP.Primary.Ammo = "none"
-SWEP.Primary.Delay = 0.5
+SWEP.Primary.Delay = 0.6
 SWEP.Primary.Damage = 25
 SWEP.Primary.Automatic = false
 SWEP.Primary.ClipSize = 4
@@ -63,7 +63,6 @@ function SWEP:Initialize()
 
 	self:SetDeploySpeed(self.DeploySpeed)
 
-	-- compat for gmod update
 	if (self.SetHoldType) then
 		self:SetHoldType(self.HoldType or "pistol")
 	end
@@ -136,6 +135,8 @@ function SWEP:PrimaryAttack()
 			owner:SetAnimation(PLAYER_ATTACK1)
 		end
 
+		self:UpdateNextIdle()
+
 		if (IsValid(owner) and !owner:IsNPC() and owner.ViewPunch) then
 			owner:ViewPunch(Angle(0, math.Rand(1, 5), 0))
 		end
@@ -164,9 +165,14 @@ function SWEP:ChangePredatorStacks(amount)
 	self.NextSpeedDecrease = CurTime() + 10
 end
 
+function SWEP:UpdateNextIdle()
+	self:SetNWFloat("NextIdle", CurTime() + (self.Owner:GetViewModel():SequenceDuration() * 0.8))
+end
+
 function SWEP:Deploy()
 	self.Owner:SetNWInt("PredatorStacks", self.MinimumPredatorStacks)
 	self.Weapon:SendWeaponAnim(ACT_VM_DRAW)
+	self:UpdateNextIdle()
 
 	hook.Add("TTTPlayerSpeed", "TTTPredatorBladeSpeed", function(ply)
 		if (IsValid(ply) and IsValid(ply:GetActiveWeapon()) and ply:GetActiveWeapon():GetClass() == "weapon_ttt_predator_blade") then

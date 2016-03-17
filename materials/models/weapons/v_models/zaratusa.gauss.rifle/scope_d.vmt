@@ -4,7 +4,7 @@
 	"$bumpmap" "models/weapons/v_models/zaratusa.gauss.rifle/scope_n"
 	"$PhongExponentTexture" "models/weapons/v_models/zaratusa.gauss.rifle/scope_s"
 	"$envmap" "env_cubemap"
-	"$envmaptint" "[.05 .05 .05]"
+	"$envmaptint" "[.03 .03 .03]"
 	"$model" "1"
 
 	"$selfillum" "0"

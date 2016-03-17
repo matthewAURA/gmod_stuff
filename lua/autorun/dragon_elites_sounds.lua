@@ -33,3 +33,5 @@ sound.Add({
 	volume = 1.0,
 	sound = "weapons/dragon_elites/deploy.wav"
 })
+
+game.AddParticles("particles/smoke_trail.pcf")

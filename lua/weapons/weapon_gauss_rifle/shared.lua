@@ -54,11 +54,16 @@ function SWEP:Initialize()
 	end
 
 	self:ResetIronSights()
+
+	PrecacheParticleSystem("smoke_trail")
 end
 
 function SWEP:PrimaryAttack(worldsnd)
 	if (self:CanPrimaryAttack() and self:GetNextPrimaryFire() <= CurTime()) then
 		self:SetNextPrimaryFire(CurTime() + self.Primary.Delay)
+
+		local owner = self.Owner
+		owner:GetViewModel():StopParticles()
 
 		if (!worldsnd) then
 			self.Weapon:EmitSound(self.Primary.Sound)
@@ -69,7 +74,6 @@ function SWEP:PrimaryAttack(worldsnd)
 		self:ShootBullet(self.Primary.Damage, self.Primary.NumShots, self:GetPrimaryCone())
 		self:TakePrimaryAmmo(1)
 
-		local owner = self.Owner
 		local tr = owner:GetEyeTrace()
 
 		-- explosion effect
@@ -83,7 +87,7 @@ function SWEP:PrimaryAttack(worldsnd)
 		-- electrical tracer
 		local effectdata = EffectData()
 		effectdata:SetOrigin(tr.HitPos)
-		effectdata:SetStart(self:GetPos())
+		effectdata:SetStart(self.Owner:GetShootPos())
 		effectdata:SetAttachment(1)
 		effectdata:SetEntity(self.Weapon)
 		util.Effect("ToolTracer", effectdata)
@@ -98,6 +102,8 @@ function SWEP:PrimaryAttack(worldsnd)
 		if (IsValid(owner) and !owner:IsNPC() and owner.ViewPunch) then
 			owner:ViewPunch(Angle(math.Rand(-0.2, -0.1) * self.Primary.Recoil, math.Rand(-0.1, 0.1) * self.Primary.Recoil, 0))
 		end
+
+		ParticleEffectAttach("smoke_trail", PATTACH_POINT_FOLLOW, owner:GetViewModel(), 1)
 	end
 end
 

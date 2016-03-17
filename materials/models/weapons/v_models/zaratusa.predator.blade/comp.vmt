@@ -1,7 +1,8 @@
 "VertexLitGeneric"
 {
-	"$baseTexture" "models/weapons/v_models/wrist_blades/comp"
-	"$bumpmap" "models/weapons/v_models/wrist_blades/comp_normal"
+	"$baseTexture" "models/weapons/v_models/zaratusa.predator.blade/comp"
+	"$bumpmap" "models/weapons/v_models/zaratusa.predator.blade/comp_normal"
 	"$envmap" "env_cubemap"
-	"$normalmapalphaenvmapmask" "models/weapons/v_models/wrist_blades/comp_ref"
+	"$envmaptint" "[.1 .1 .1]"
+	"$normalmapalphaenvmapmask" "models/weapons/v_models/zaratusa.predator.blade/comp_ref"
 }

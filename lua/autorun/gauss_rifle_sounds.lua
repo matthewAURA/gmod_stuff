@@ -39,3 +39,5 @@ sound.Add({
 	volume = 1.0,
 	sound = "weapons/gauss_rifle/clipin.wav"
 })
+
+game.AddParticles("particles/smoke_trail.pcf")
