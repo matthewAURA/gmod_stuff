@@ -35,12 +35,12 @@ SWEP.Secondary.Ammo = "none"
 SWEP.Secondary.ClipSize = -1
 SWEP.Secondary.DefaultClip = -1
 
+SWEP.DeploySpeed = 1.4
 SWEP.HeadshotMultiplier = 2.97
 
 --- Model settings ---
 SWEP.HoldType = "duel"
 
-SWEP.DeploySpeed = 1.4
 SWEP.UseHands = true
 SWEP.ViewModelFlip = true
 SWEP.ViewModelFOV = 74
@@ -78,6 +78,7 @@ function SWEP:PrimaryAttack()
 		self.LastShot = CurTime()
 		self:TakePrimaryAmmo(1)
 
+		local owner = self.Owner
 		if (IsValid(owner) and !owner:IsNPC() and owner.ViewPunch) then
 			owner:ViewPunch(Angle(math.Rand(-0.2,-0.1) * self.Primary.Recoil, math.Rand(-0.1,0.1) * self.Primary.Recoil, 0))
 		end

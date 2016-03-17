@@ -1,0 +1,165 @@
+--- Author informations ---
+SWEP.Author = "Zaratusa"
+SWEP.Contact = "http://steamcommunity.com/profiles/76561198032479768"
+
+-- Always derive from weapon_tttbase
+SWEP.Base = "weapon_tttbase"
+
+--- Default GMod values ---
+SWEP.Primary.Ammo = "thumper" -- use a unused ammo type
+SWEP.Primary.Delay = 2
+SWEP.Primary.Recoil = 6
+SWEP.Primary.Cone = 0.0025
+SWEP.Primary.Damage = 75
+SWEP.Primary.Automatic = false
+SWEP.Primary.ClipSize = 1
+SWEP.Primary.DefaultClip = 2
+SWEP.Primary.Sound = Sound("Gauss_Rifle.Single")
+SWEP.Secondary.Delay = 0.5
+SWEP.Secondary.Sound = Sound("Default.Zoom")
+
+--- Model settings ---
+SWEP.HoldType = "ar2"
+
+SWEP.UseHands = true
+SWEP.ViewModelFlip = false
+SWEP.ViewModelFOV = 64
+SWEP.ViewModel = Model("models/weapons/zaratusa/gauss_rifle/v_gauss_rifle.mdl")
+SWEP.WorldModel = Model("models/weapons/zaratusa/gauss_rifle/w_gauss_rifle.mdl")
+
+SWEP.IronSightsPos = Vector(5, -15, -2)
+SWEP.IronSightsAng = Vector(2.6, 1.37, 3.5)
+
+--- TTT config values ---
+
+-- Kind specifies the category this weapon is in. Players can only carry one of
+-- each. Can be: WEAPON_... MELEE, PISTOL, HEAVY, NADE, CARRY, EQUIP1, EQUIP2 or ROLE.
+-- Matching SWEP.Slot values: 0      1       2     3      4      6       7        8
+SWEP.Kind = WEAPON_EQUIP1
+
+-- If AutoSpawnable is true and SWEP.Kind is not WEAPON_EQUIP1/2,
+-- then this gun can be spawned as a random weapon.
+SWEP.AutoSpawnable = false
+
+-- The AmmoEnt is the ammo entity that can be picked up when carrying this gun.
+SWEP.AmmoEnt = "none"
+
+-- CanBuy is a table of ROLE_* entries like ROLE_TRAITOR and ROLE_DETECTIVE. If
+-- a role is in this table, those players can buy this.
+SWEP.CanBuy = { ROLE_TRAITOR }
+
+-- If LimitedStock is true, you can only buy one per round.
+SWEP.LimitedStock = true
+
+-- If AllowDrop is false, players can't manually drop the gun with Q
+SWEP.AllowDrop = true
+
+-- If IsSilent is true, victims will not scream upon death.
+SWEP.IsSilent = false
+
+-- If NoSights is true, the weapon won't have ironsights
+SWEP.NoSights = false
+
+function SWEP:PrimaryAttack(worldsnd)
+	if (self:CanPrimaryAttack() and self:GetNextPrimaryFire() <= CurTime()) then
+		self:SetNextPrimaryFire(CurTime() + self.Primary.Delay)
+
+		if (!worldsnd) then
+			self.Weapon:EmitSound(self.Primary.Sound)
+		elseif SERVER then
+			sound.Play(self.Primary.Sound, self:GetPos())
+		end
+
+		self:ShootBullet(self.Primary.Damage, self.Primary.Recoil, self.Primary.NumShots, self:GetPrimaryCone())
+		self:TakePrimaryAmmo(1)
+
+		local owner = self.Owner
+		local tr = owner:GetEyeTrace()
+
+		-- explosion effect
+		local effectdata = EffectData()
+		effectdata:SetOrigin(tr.HitPos)
+		effectdata:SetNormal(tr.HitNormal)
+		effectdata:SetEntity(tr.Entity)
+		effectdata:SetAttachment(tr.PhysicsBone)
+		util.Effect("Explosion", effectdata)
+
+		-- electrical tracer
+		local effectdata = EffectData()
+		effectdata:SetOrigin(tr.HitPos)
+		effectdata:SetStart(self:GetPos())
+		effectdata:SetAttachment(1)
+		effectdata:SetEntity(self.Weapon)
+		util.Effect("ToolTracer", effectdata)
+
+		-- explosion damage
+		if SERVER then
+			util.BlastDamage(self, owner, tr.HitPos, 250, 40)
+		end
+
+		self:UpdateNextIdle()
+
+		if (IsValid(owner) and !owner:IsNPC() and owner.ViewPunch) then
+			owner:ViewPunch(Angle(math.Rand(-0.2, -0.1) * self.Primary.Recoil, math.Rand(-0.1, 0.1) * self.Primary.Recoil, 0))
+		end
+	end
+end
+
+function SWEP:Deploy()
+	self.Weapon:SendWeaponAnim(ACT_VM_DRAW)
+	self:ResetIronSights()
+	self:UpdateNextIdle()
+	return true
+end
+
+function SWEP:UpdateNextIdle()
+	self:SetNWFloat("NextIdle", CurTime() + self.Owner:GetViewModel():SequenceDuration())
+end
+
+-- Add some zoom to the scope for this gun
+function SWEP:SecondaryAttack()
+	if (self.IronSightsPos and self:GetNextSecondaryFire() <= CurTime()) then
+		self:SetNextPrimaryFire(CurTime() + self.Secondary.Delay)
+		self:SetNextSecondaryFire(CurTime() + self.Secondary.Delay)
+
+		local bIronsights = not self:GetIronsights()
+		self:SetIronsights(bIronsights)
+		if SERVER then
+			self:SetZoom(bIronsights)
+		else
+			self:EmitSound(self.Secondary.Sound)
+		end
+	end
+end
+
+function SWEP:SetZoom(state)
+	if (SERVER and IsValid(self.Owner) and self.Owner:IsPlayer()) then
+		if (state) then
+			self.Owner:SetFOV(20, 0.3)
+		else
+			self.Owner:SetFOV(0, 0.2)
+		end
+	end
+end
+
+function SWEP:PreDrop()
+	self:ResetIronSights()
+	return self.BaseClass.PreDrop(self)
+end
+
+function SWEP:Reload()
+	if (self:Clip1() < self.Primary.ClipSize and self.Owner:GetAmmoCount(self.Primary.Ammo) > 0) then
+		self:DefaultReload(ACT_VM_RELOAD)
+		self:ResetIronSights()
+	end
+end
+
+function SWEP:Holster()
+	self:ResetIronSights()
+	return true
+end
+
+function SWEP:ResetIronSights()
+	self:SetIronsights(false)
+	self:SetZoom(false)
+end
