@@ -21,6 +21,7 @@ SWEP.Primary.Automatic = false
 SWEP.Primary.ClipSize = 4
 SWEP.Primary.DefaultClip = 16
 SWEP.Primary.Sound = Sound("Gauss_Rifle.Single")
+SWEP.Primary.SoundLevel = 120
 
 SWEP.Secondary.Ammo = "none"
 SWEP.Secondary.ClipSize = -1
@@ -66,9 +67,9 @@ function SWEP:PrimaryAttack(worldsnd)
 		owner:GetViewModel():StopParticles()
 
 		if (!worldsnd) then
-			self.Weapon:EmitSound(self.Primary.Sound)
+			self.Weapon:EmitSound(self.Primary.Sound, self.Primary.SoundLevel)
 		elseif SERVER then
-			sound.Play(self.Primary.Sound, self:GetPos())
+			sound.Play(self.Primary.Sound, self:GetPos(), self.Primary.SoundLevel)
 		end
 
 		self:ShootBullet(self.Primary.Damage, self.Primary.NumShots, self:GetPrimaryCone())

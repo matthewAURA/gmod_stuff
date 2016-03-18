@@ -13,8 +13,10 @@ SWEP.Primary.Cone = 0.0025
 SWEP.Primary.Damage = 75
 SWEP.Primary.Automatic = false
 SWEP.Primary.ClipSize = 1
-SWEP.Primary.DefaultClip = 2
+SWEP.Primary.ClipMax = 1
+SWEP.Primary.DefaultClip = 1
 SWEP.Primary.Sound = Sound("Gauss_Rifle.Single")
+SWEP.Primary.SoundLevel = 120
 SWEP.Secondary.Delay = 0.5
 SWEP.Secondary.Sound = Sound("Default.Zoom")
 
@@ -66,11 +68,12 @@ function SWEP:Initialize()
 	elseif (SERVER) then
 		self.fingerprints = {}
 		self:SetIronsights(false)
+		-- aditional magazine, seems to be bugged, if using DefaultClip
+		timer.Simple(0.1, function() if (IsValid(self.Owner)) then self.Owner:GiveAmmo(1, "thumper", true) end end)
 	end
 
 	self:SetDeploySpeed(self.DeploySpeed)
 
-	-- compat for gmod update
 	if (self.SetHoldType) then
 		self:SetHoldType(self.HoldType or "pistol")
 	end
@@ -86,9 +89,9 @@ function SWEP:PrimaryAttack(worldsnd)
 		owner:GetViewModel():StopParticles()
 
 		if (!worldsnd) then
-			self.Weapon:EmitSound(self.Primary.Sound)
+			self.Weapon:EmitSound(self.Primary.Sound, self.Primary.SoundLevel)
 		elseif SERVER then
-			sound.Play(self.Primary.Sound, self:GetPos())
+			sound.Play(self.Primary.Sound, self:GetPos(), self.Primary.SoundLevel)
 		end
 
 		self:ShootBullet(self.Primary.Damage, self.Primary.Recoil, self.Primary.NumShots, self:GetPrimaryCone())

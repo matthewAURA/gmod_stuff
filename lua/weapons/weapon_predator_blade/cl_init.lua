@@ -1,14 +1,7 @@
 include('shared.lua')
 
 SWEP.PrintName = "Predator Blade"
-SWEP.Slot = 6
-SWEP.Icon = "vgui/ttt/icon_predator_blade"
-
--- Equipment menu information is only needed on the client
-SWEP.EquipMenuData = {
-	type = "item_weapon",
-	desc = "Awaken the predator in you.\nInstant kill everyone without body armor."
-}
+SWEP.Slot = 0
 
 function SWEP:DrawHUD()
 	local tr = self.Owner:GetEyeTrace(MASK_SHOT)
@@ -17,7 +10,7 @@ function SWEP:DrawHUD()
 	local x = ScrW() / 2.0
 	local y = ScrH() / 2.0
 
-	if (tr.HitNonWorld and IsValid(ent) and ent:IsPlayer()) then
+	if (tr.HitNonWorld and IsValid(ent) and ent:IsPlayer() or ent:IsNPC()) then
 		local color, text
 		if ((ent:TranslatePhysBoneToBone(tr.PhysicsBone) == 6) or (math.abs(math.AngleDifference(ent:GetAngles().y, self.Owner:GetAngles().y)) <= 50)) then
 			color = Color(200 * 110 / LocalPlayer():GetPos():Distance(ent:GetPos()), 0, 200, 255 * 110 / LocalPlayer():GetPos():Distance(ent:GetPos()))

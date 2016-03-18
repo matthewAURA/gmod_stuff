@@ -99,3 +99,11 @@ function SWEP:OnRemove()
 		RunConsoleCommand("lastinv")
 	end
 end
+
+function SWEP:DrawHUD()
+	local x = ScrW() / 2.0
+	local y = ScrH() * 0.995
+	
+	draw.SimpleText("Primary attack to feed someone else.", "Default", x, y - 20, COLOR_WHITE, TEXT_ALIGN_CENTER, TEXT_ALIGN_BOTTOM)
+	draw.SimpleText("Secondary attack to eat.", "Default", x, y, COLOR_WHITE, TEXT_ALIGN_CENTER, TEXT_ALIGN_BOTTOM)
+end

@@ -16,6 +16,12 @@ function SWEP:Think()
 		self:ChangePredatorStacks(-1)
 	end
 
+	if (IsValid(owner)) then
+		local increase = 1 + owner:GetNWInt("PredatorStacks") * 0.1
+		owner:SetWalkSpeed(200 * increase)
+		owner:SetRunSpeed(400 * increase)
+	end
+
 	local idletime = self:GetNWFloat("NextIdle")
 	if (idletime > 0 and CurTime() > idletime) then
 		local vm = owner:GetViewModel()

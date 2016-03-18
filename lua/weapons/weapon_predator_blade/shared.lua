@@ -2,16 +2,26 @@
 SWEP.Author = "Zaratusa"
 SWEP.Contact = "http://steamcommunity.com/profiles/76561198032479768"
 
--- Always derive from weapon_tttbase
-SWEP.Base = "weapon_tttbase"
-
 --- Default GMod values ---
+SWEP.Base = "weapon_base"
+SWEP.Category = "Other"
+SWEP.Purpose = "Kill everyone you see, just like a predator."
+SWEP.Spawnable = true
+SWEP.AdminSpawnable = true
+SWEP.AdminOnly = false
+SWEP.DrawAmmo = true
+SWEP.DrawCrosshair = true
+
 SWEP.Primary.Ammo = "none"
 SWEP.Primary.Delay = 0.6
 SWEP.Primary.Damage = 25
 SWEP.Primary.Automatic = false
 SWEP.Primary.ClipSize = 4
 SWEP.Primary.DefaultClip = 4
+
+SWEP.Secondary.Ammo = "none"
+SWEP.Secondary.ClipSize = -1
+SWEP.Secondary.DefaultClip = -1
 
 SWEP.MinimumPredatorStacks = 1
 
@@ -24,39 +34,8 @@ SWEP.ViewModelFOV = 65
 SWEP.ViewModel = Model("models/weapons/zaratusa/predator_blade/v_predator_blade.mdl")
 SWEP.WorldModel = Model("models/weapons/zaratusa/predator_blade/w_predator_blade.mdl")
 
---- TTT config values ---
-
--- Kind specifies the category this weapon is in. Players can only carry one of
--- each. Can be: WEAPON_... MELEE, PISTOL, HEAVY, NADE, CARRY, EQUIP1, EQUIP2 or ROLE.
--- Matching SWEP.Slot values: 0      1       2     3      4      6       7        8
-SWEP.Kind = WEAPON_EQUIP1
-
--- If AutoSpawnable is true and SWEP.Kind is not WEAPON_EQUIP1/2,
--- then this gun can be spawned as a random weapon.
-SWEP.AutoSpawnable = false
-
--- The AmmoEnt is the ammo entity that can be picked up when carrying this gun.
-SWEP.AmmoEnt = "none"
-
--- CanBuy is a table of ROLE_* entries like ROLE_TRAITOR and ROLE_DETECTIVE. If
--- a role is in this table, those players can buy this.
-SWEP.CanBuy = { ROLE_TRAITOR }
-
--- If LimitedStock is true, you can only buy one per round.
-SWEP.LimitedStock = true
-
--- If AllowDrop is false, players can't manually drop the gun with Q
-SWEP.AllowDrop = true
-
--- If IsSilent is true, victims will not scream upon death.
-SWEP.IsSilent = false
-
--- If NoSights is true, the weapon won't have ironsights
-SWEP.NoSights = true
-
 function SWEP:Initialize()
 	if (SERVER) then
-		self.fingerprints = {}
 		self.NextJumpStack = 0
 		self.NextSpeedDecrease = 0
 	end
@@ -96,11 +75,11 @@ function SWEP:PrimaryAttack()
 			if (tr.Hit) then
 				if (IsValid(ent)) then
 					local dmg = ent:GetMaxHealth() * 0.5
-					if (ent:IsPlayer() and !ent:IsSpec()) then
+					if (ent:IsPlayer() or ent:IsNPC()) then
 						if ((ent:TranslatePhysBoneToBone(tr.PhysicsBone) == 6) or (math.abs(math.AngleDifference(ent:GetAngles().y, owner:GetAngles().y)) <= 50)) then
 							dmg = ent:GetMaxHealth()
 							self.Weapon:SendWeaponAnim(ACT_VM_HITCENTER)
-							sound.Play("Predator_Blade.Stab", ent:GetPos())
+							sound.Play("Predator_Blade.Hit", ent:GetPos())
 						else
 							self.Weapon:SendWeaponAnim(ACT_VM_PRIMARYATTACK_2)
 							sound.Play("Predator_Blade.Hit", self.Weapon:GetPos())
@@ -146,7 +125,7 @@ end
 function SWEP:SecondaryAttack()
 	if (self:Clip1() > 0 and IsValid(self.Owner) and self.Owner:OnGround()) then
 		self.Owner:ConCommand("+jump")
-		self.Owner:SetVelocity(Vector(self.Owner:GetAimVector().x * 450, self.Owner:GetAimVector().y * 450, 0))
+		self.Owner:SetVelocity(Vector(self.Owner:GetAimVector().x * 650, self.Owner:GetAimVector().y * 650, 0))
 		timer.Simple(0.1,function()
 			if (IsValid(self) and IsValid(self.Owner)) then
 				self.Owner:ConCommand("-jump")
@@ -173,12 +152,6 @@ function SWEP:Deploy()
 	self.Owner:SetNWInt("PredatorStacks", self.MinimumPredatorStacks)
 	self.Weapon:SendWeaponAnim(ACT_VM_DRAW)
 	self:UpdateNextIdle()
-
-	hook.Add("TTTPlayerSpeed", "TTTPredatorBladeSpeed", function(ply)
-		if (IsValid(ply) and IsValid(ply:GetActiveWeapon()) and ply:GetActiveWeapon():GetClass() == "weapon_ttt_predator_blade") then
-			return 1 + ply:GetNWInt("PredatorStacks") * 0.1 -- 10% speed increase per stack
-		end
-	end)
 end
 
 function SWEP:UpdateNextIdle()
@@ -186,8 +159,9 @@ function SWEP:UpdateNextIdle()
 end
 
 function SWEP:Holster()
-	hook.Remove("TTTPlayerSpeed", "TTTPredatorBladeSpeed")
 	if (IsValid(self) and IsValid(self.Owner)) then
+		self.Owner:SetWalkSpeed(200)
+		self.Owner:SetRunSpeed(400)
 		self.Owner:ConCommand("-jump")
 	end
 
