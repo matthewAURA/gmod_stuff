@@ -39,12 +39,12 @@ function ENT:Think()
 end
 
 function ENT:SendWarn(armed)
-	net.Start("TTT_MineTurtleWarning")
-	net.WriteUInt(self:EntIndex(), 16)
-	net.WriteBool(armed)
-	net.WriteVector(self:GetPos())
 	local owner = self:GetPlacer()
-	if (IsValid(owner) and owner:IsRole(ROLE_TRAITOR)) then
+	if (!armed or (IsValid(owner) and owner:IsRole(ROLE_TRAITOR))) then
+		net.Start("TTT_MineTurtleWarning")
+			net.WriteUInt(self:EntIndex(), 16)
+			net.WriteBool(armed)
+			net.WriteVector(self:GetPos())
 		net.Send(GetTraitorFilter(true))
 	end
 end
