@@ -43,22 +43,29 @@ SWEP.ViewModelFOV = 85
 SWEP.ViewModel = Model("models/weapons/zaratusa/golden_deagle/v_golden_deagle.mdl")
 SWEP.WorldModel = Model("models/weapons/zaratusa/golden_deagle/w_golden_deagle.mdl")
 
--- Precache sounds
-function SWEP:Precache()
-	util.PrecacheSound("Golden_Deagle.Single")
-	util.PrecacheSound("Golden_Deagle.Clipout")
-	util.PrecacheSound("Golden_Deagle.Clipin")
-	util.PrecacheSound("Golden_Deagle.Sliderelease")
-	util.PrecacheSound("Golden_Deagle.Slideback")
-	util.PrecacheSound("Golden_Deagle.Slideforward")
+function SWEP:Initialize()
+	self:SetDeploySpeed(self.DeploySpeed)
+
+	if (self.SetHoldType) then
+		self:SetHoldType(self.HoldType or "pistol")
+	end
+
+	PrecacheParticleSystem("smoke_trail")
 end
 
-function SWEP:PrimaryAttack()
+function SWEP:PrimaryAttack(worldsnd)
 	if (self:CanPrimaryAttack()) then
 		self:SetNextPrimaryFire(CurTime() + self.Primary.Delay)
 		self:SetNextSecondaryFire(CurTime() + self.Primary.Delay)
 
-		self.Weapon:EmitSound(self.Primary.Sound)
+		local owner = self.Owner
+		owner:GetViewModel():StopParticles()
+
+		if (!worldsnd) then
+			self.Weapon:EmitSound(self.Primary.Sound)
+		elseif SERVER then
+			sound.Play(self.Primary.Sound, self:GetPos())
+		end
 
 		self:ShootBullet(self.Primary.Damage, self.Primary.NumShots, self.Primary.Cone)
 		self:TakePrimaryAmmo(1)
@@ -66,6 +73,8 @@ function SWEP:PrimaryAttack()
 		if (IsValid(owner) and !owner:IsNPC() and owner.ViewPunch) then
 			owner:ViewPunch(Angle(math.Rand(-0.2,-0.1) * self.Primary.Recoil, math.Rand(-0.1,0.1) * self.Primary.Recoil, 0))
 		end
+
+		timer.Simple(0.5, function() if (IsValid(self) and IsValid(self.Owner)) then ParticleEffectAttach("smoke_trail", PATTACH_POINT_FOLLOW, self.Owner:GetViewModel(), 1) end end)
 	end
 end
 

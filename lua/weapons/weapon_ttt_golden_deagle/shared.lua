@@ -73,29 +73,40 @@ SWEP.IsSilent = false
 -- If NoSights is true, the weapon won't have ironsights
 SWEP.NoSights = false
 
--- Precache sounds
-function SWEP:Precache()
-	util.PrecacheSound("Golden_Deagle.Single")
-	util.PrecacheSound("Golden_Deagle.Clipout")
-	util.PrecacheSound("Golden_Deagle.Clipin")
-	util.PrecacheSound("Golden_Deagle.Sliderelease")
-	util.PrecacheSound("Golden_Deagle.Slideback")
-	util.PrecacheSound("Golden_Deagle.Slideforward")
+function SWEP:Initialize()
+	if (CLIENT and self:Clip1() == -1) then
+		self:SetClip1(self.Primary.DefaultClip)
+	elseif (SERVER) then
+		self.fingerprints = {}
+		self:SetIronsights(false)
+	end
+
+	self:SetDeploySpeed(self.DeploySpeed)
+
+	if (self.SetHoldType) then
+		self:SetHoldType(self.HoldType or "pistol")
+	end
+
+	PrecacheParticleSystem("smoke_trail")
 end
 
-function SWEP:PrimaryAttack()
+function SWEP:PrimaryAttack(worldsnd)
 	if (self:CanPrimaryAttack()) then
 		self:SetNextPrimaryFire(CurTime() + self.Primary.Delay)
 		self:SetNextSecondaryFire(CurTime() + self.Primary.Delay)
 
+		local owner = self.Owner
+		owner:GetViewModel():StopParticles()
+
 		self:SendWeaponAnim(ACT_VM_PRIMARYATTACK)
 		self.Owner:MuzzleFlash()
 		self.Owner:SetAnimation(PLAYER_ATTACK1)
-		if SERVER then
-			sound.Play(self.Primary.Sound, self:GetPos(), self.Primary.SoundLevel)
+		if (!worldsnd) then
+			self.Weapon:EmitSound(self.Primary.Sound)
+		elseif SERVER then
+			sound.Play(self.Primary.Sound, self:GetPos())
 		end
 
-		local owner = self.Owner
 		local tr = util.TraceLine(util.GetPlayerTrace(owner))
 
 		if (SERVER and tr.Entity:IsPlayer() and (tr.Entity:IsRole(ROLE_INNOCENT) or tr.Entity:IsRole(ROLE_DETECTIVE))) then
@@ -130,5 +141,7 @@ function SWEP:PrimaryAttack()
 		if (IsValid(owner) and !owner:IsNPC() and owner.ViewPunch) then
 			owner:ViewPunch(Angle(math.Rand(-0.2,-0.1) * self.Primary.Recoil, math.Rand(-0.1,0.1) * self.Primary.Recoil, 0))
 		end
+
+		timer.Simple(0.5, function() if (IsValid(self) and IsValid(self.Owner)) then ParticleEffectAttach("smoke_trail", PATTACH_POINT_FOLLOW, self.Owner:GetViewModel(), 1) end end)
 	end
 end

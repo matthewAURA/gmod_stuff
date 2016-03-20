@@ -15,13 +15,11 @@ end
 SWEP.Base = "weapon_tttbase"
 
 --- Default GMod values ---
-SWEP.HoldType = "ar2"
-
 SWEP.Primary.Ammo = "SMG1"
 SWEP.Primary.Delay = 0.08
 SWEP.Primary.Recoil	= 1.1
 SWEP.Primary.Cone = 0.017
-SWEP.Primary.Damage = 16
+SWEP.Primary.Damage = 14
 SWEP.Primary.Automatic = true
 SWEP.Primary.ClipSize = 30
 SWEP.Primary.ClipMax = 60
@@ -29,6 +27,8 @@ SWEP.Primary.DefaultClip = 30
 SWEP.Primary.Sound = Sound("Weapon_TMP.Single")
 
 --- Model settings ---
+SWEP.HoldType = "ar2"
+
 SWEP.UseHands = true
 SWEP.ViewModelFlip = false
 SWEP.ViewModelFOV = 64

@@ -40,3 +40,5 @@ sound.Add({
 	volume = 1.0,
 	sound = "weapons/golden_deagle/slideforward.wav"
 })
+
+game.AddParticles("particles/smoke_trail.pcf")
