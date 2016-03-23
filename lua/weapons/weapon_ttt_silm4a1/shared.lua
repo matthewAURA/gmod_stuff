@@ -5,7 +5,7 @@ SWEP.Contact = "http://steamcommunity.com/profiles/76561198032479768"
 if SERVER then
 	AddCSLuaFile()
 	resource.AddWorkshop("253737867")
-elseif CLIENT then
+else
 	SWEP.PrintName = "Silenced M4A1"
 	SWEP.Slot = 6
 	SWEP.Icon = "vgui/ttt/icon_silm4a1"
@@ -14,7 +14,7 @@ elseif CLIENT then
 	SWEP.EquipMenuData = {
 		type = "item_weapon",
 		desc = "A modified M4A1 carbine with a suppressor.\nVictims will not scream when they're killed."
-	};
+	}
 end
 
 -- Always derive from weapon_tttbase

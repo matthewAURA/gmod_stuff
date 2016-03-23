@@ -5,7 +5,7 @@ SWEP.Contact = "http://steamcommunity.com/profiles/76561198032479768"
 if SERVER then
 	AddCSLuaFile()
 	resource.AddWorkshop("639762141")
-elseif CLIENT then
+else
 	SWEP.PrintName = "Dragon Elites"
 	SWEP.Slot = 1
 end

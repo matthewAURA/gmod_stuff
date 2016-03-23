@@ -5,7 +5,7 @@ SWEP.Contact = "http://steamcommunity.com/profiles/76561198032479768"
 if SERVER then
 	AddCSLuaFile()
 	resource.AddWorkshop("634300147")
-elseif CLIENT then
+else
 	SWEP.PrintName = "Dual Elites"
 	SWEP.Slot = 1
 	SWEP.Icon = "vgui/ttt/icon_dual_elites"

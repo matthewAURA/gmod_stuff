@@ -5,7 +5,7 @@ SWEP.Contact = "http://steamcommunity.com/profiles/76561198032479768"
 if SERVER then
 	AddCSLuaFile()
 	resource.AddWorkshop("254177214")
-elseif CLIENT then
+else
 	SWEP.PrintName = "Jihad Bomb"
 	SWEP.Slot = 8
 	SWEP.Icon = "vgui/ttt/icon_jihad_bomb"
@@ -13,8 +13,8 @@ elseif CLIENT then
 	-- Equipment menu information is only needed on the client
 	SWEP.EquipMenuData = {
 		type = "item_weapon",
-		desc = "Sacrifice yourself to Allah.\nYour 72 virgins await.\n\nNOTE: This is not refundable after use."
-	};
+		desc = "Sacrifice yourself to Allah.\nYour 72 virgins await.\n\nNOTE: No refund after use."
+	}
 end
 
 -- Always derive from weapon_tttbase
@@ -70,6 +70,22 @@ function SWEP:Precache()
 	util.PrecacheModel("models/humans/charple02.mdl")
 	util.PrecacheModel("models/humans/charple03.mdl")
 	util.PrecacheModel("models/humans/charple04.mdl")
+end
+
+function SWEP:Initialize()
+	if (CLIENT and self:Clip1() == -1) then
+		self:SetClip1(self.Primary.DefaultClip)
+	elseif SERVER then
+		self.fingerprints = {}
+	end
+
+	self:SetDeploySpeed(self.DeploySpeed)
+
+	if (self.SetHoldType) then
+		self:SetHoldType(self.HoldType or "pistol")
+	end
+
+	self:SetNWBool("Exploding", false)
 end
 
 local function ScorchUnderRagdoll(ent)
@@ -130,8 +146,10 @@ function SWEP:PrimaryAttack()
 
 	-- The rest is only done on the server
 	if SERVER then
+		local owner = self.Owner
+		self:SetNWBool("Exploding", true)
 		-- Only explode, if the code was completely typed in
-		timer.Simple(2.05, function() if (IsValid(self.Owner)) then self:Explode() end end)
+		timer.Simple(2.05, function() if (IsValid(owner)) then self:Explode() end end)
 		self.Owner:EmitSound("weapons/jihad_bomb/jihad.wav", math.random(100, 150), math.random(95, 105))
 	end
 end
@@ -200,6 +218,14 @@ function SWEP:SphereDamage(dmgowner, center, radius)
 			end
 		end
 	end
+end
+
+function SWEP:Deploy()
+	self:SetNWBool("Exploding", false)
+end
+
+function SWEP:Holster()
+	return !self:GetNWBool("Exploding")
 end
 
 -- Secondary attack does nothing

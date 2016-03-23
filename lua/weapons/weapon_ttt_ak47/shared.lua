@@ -5,7 +5,7 @@ SWEP.Contact = "http://steamcommunity.com/profiles/76561198032479768"
 if SERVER then
 	AddCSLuaFile()
 	resource.AddWorkshop("253736148")
-elseif CLIENT then
+else
 	SWEP.PrintName = "AK47"
 	SWEP.Slot = 6
 	SWEP.Icon = "vgui/ttt/icon_ak47"
@@ -14,7 +14,7 @@ elseif CLIENT then
 	SWEP.EquipMenuData = {
 		type = "item_weapon",
 		desc = "Very high damage assault rifle.\n\nHas very high recoil."
-	};
+	}
 end
 
 -- Always derive from weapon_tttbase
@@ -41,8 +41,8 @@ SWEP.ViewModelFOV = 50
 SWEP.ViewModel = Model("models/weapons/cstrike/c_rif_ak47.mdl")
 SWEP.WorldModel = Model("models/weapons/w_rif_ak47.mdl")
 
-SWEP.IronSightsPos = Vector(-6.56, -8, 4.1)
-SWEP.IronSightsAng = Vector(2.6, 0.06, 0)
+SWEP.IronSightsPos = Vector(-6.56, -11, 2.4)
+SWEP.IronSightsAng = Vector(2.4, 0, 0)
 
 --- TTT config values ---
 

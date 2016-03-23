@@ -5,7 +5,7 @@ SWEP.Contact = "http://steamcommunity.com/profiles/76561198032479768"
 if SERVER then
 	AddCSLuaFile()
 	resource.AddWorkshop("253737636")
-elseif CLIENT then
+else
 	SWEP.PrintName = "P228"
 	SWEP.Slot = 1
 	SWEP.Icon = "vgui/ttt/icon_p228"
@@ -35,7 +35,7 @@ SWEP.ViewModelFOV = 54
 SWEP.ViewModel = Model("models/weapons/cstrike/c_pist_p228.mdl")
 SWEP.WorldModel = Model("models/weapons/w_pist_p228.mdl")
 
-SWEP.IronSightsPos = Vector(-5.975, -9, 4.935)
+SWEP.IronSightsPos = Vector(-5.95, -9, 2.87)
 SWEP.IronSightsAng = Vector(-1, -0.03, 0)
 
 --- TTT config values ---

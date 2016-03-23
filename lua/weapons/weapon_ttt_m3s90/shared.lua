@@ -5,7 +5,7 @@ SWEP.Contact = "http://steamcommunity.com/profiles/76561198032479768"
 if SERVER then
 	AddCSLuaFile()
 	resource.AddWorkshop("253737175")
-elseif CLIENT then
+else
 	SWEP.PrintName = "M3S90"
 	SWEP.Slot = 2
 	SWEP.Icon = "vgui/ttt/icon_m3s90"
@@ -36,7 +36,7 @@ SWEP.ViewModelFOV = 58
 SWEP.ViewModel = Model("models/weapons/cstrike/c_shot_m3super90.mdl")
 SWEP.WorldModel	= Model("models/weapons/w_shot_m3super90.mdl")
 
-SWEP.IronSightsPos = Vector(-7.65, -10, 5.48)
+SWEP.IronSightsPos = Vector(-7.65, -10, 3.4)
 SWEP.IronSightsAng = Vector(-0.2, 0, 0)
 
 --- TTT config values ---

@@ -5,7 +5,7 @@ SWEP.Contact = "http://steamcommunity.com/profiles/76561198032479768"
 if SERVER then
 	AddCSLuaFile()
 	resource.AddWorkshop("253737433")
-elseif CLIENT then
+else
 	SWEP.PrintName = "P90"
 	SWEP.Slot = 6
 	SWEP.Icon = "vgui/ttt/icon_p90"
@@ -14,7 +14,7 @@ elseif CLIENT then
 	SWEP.EquipMenuData = {
 		type = "item_weapon",
 		desc = "Extremely fast firing SMG.\nComes with a mounted scope."
-	};
+	}
 end
 
 -- Always derive from weapon_tttbase

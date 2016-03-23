@@ -5,7 +5,7 @@ SWEP.Contact = "http://steamcommunity.com/profiles/76561198032479768"
 if SERVER then
 	AddCSLuaFile()
 	resource.AddWorkshop("645663146")
-elseif CLIENT then
+else
 	SWEP.PrintName = "Sandwich"
 	SWEP.Slot = 7
 	SWEP.Icon = "vgui/ttt/icon_sandwich"
@@ -121,7 +121,7 @@ end
 function SWEP:DrawHUD()
 	local x = ScrW() / 2.0
 	local y = ScrH() * 0.995
-	
+
 	draw.SimpleText("Primary attack to feed someone else.", "Default", x, y - 20, COLOR_WHITE, TEXT_ALIGN_CENTER, TEXT_ALIGN_BOTTOM)
 	draw.SimpleText("Secondary attack to eat.", "Default", x, y, COLOR_WHITE, TEXT_ALIGN_CENTER, TEXT_ALIGN_BOTTOM)
 

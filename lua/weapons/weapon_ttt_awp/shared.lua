@@ -5,7 +5,7 @@ SWEP.Contact = "http://steamcommunity.com/profiles/76561198032479768"
 if SERVER then
 	AddCSLuaFile()
 	resource.AddWorkshop("253736514")
-elseif CLIENT then
+else
 	SWEP.PrintName = "AWP"
 	SWEP.Slot = 6
 	SWEP.Icon = "vgui/ttt/icon_awp"
@@ -14,7 +14,7 @@ elseif CLIENT then
 	SWEP.EquipMenuData = {
 		type = "item_weapon",
 		desc = "AWP Sniper Rifle.\n\nOnly has two shots."
-	};
+	}
 end
 
 -- Always derive from weapon_tttbase

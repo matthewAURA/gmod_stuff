@@ -5,7 +5,7 @@ SWEP.Contact = "http://steamcommunity.com/profiles/76561198032479768"
 if SERVER then
 	AddCSLuaFile()
 	resource.AddWorkshop("635030422")
-elseif CLIENT then
+else
 	SWEP.PrintName = "SG-550"
 	SWEP.Slot = 2
 	SWEP.Icon = "vgui/ttt/icon_sg550"

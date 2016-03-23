@@ -5,7 +5,7 @@ SWEP.Contact = "http://steamcommunity.com/profiles/76561198032479768"
 if SERVER then
 	AddCSLuaFile()
 	resource.AddWorkshop("253737302")
-elseif CLIENT then
+else
 	SWEP.PrintName = "MP5 navy"
 	SWEP.Slot = 2
 	SWEP.Icon = "vgui/ttt/icon_mp5"
@@ -35,8 +35,8 @@ SWEP.ViewModelFOV = 60
 SWEP.ViewModel = Model("models/weapons/cstrike/c_smg_mp5.mdl")
 SWEP.WorldModel = Model("models/weapons/w_smg_mp5.mdl")
 
-SWEP.IronSightsPos = Vector(-5.33, -12, 3)
-SWEP.IronSightsAng = Vector(4.4, 0, -0.5)
+SWEP.IronSightsPos = Vector(-5.32, -10, 1.6)
+SWEP.IronSightsAng = Vector(2.2, 0, 0)
 
 --- TTT config values ---
 
