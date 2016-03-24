@@ -4,12 +4,12 @@ end
 
 -- prevent the script is beeing loaded before or in another gamemode than TTT
 hook.Add("PostGamemodeLoaded", "TTTInitRoleCounter", function() if (GAMEMODE_NAME == "terrortown") then
-	local ROLE_SPECTATOR = 3
-
 	if SERVER then
 		util.AddNetworkString("TTT_RoleCount_Start")
 		util.AddNetworkString("TTT_RoleCount_Say")
 		util.AddNetworkString("TTT_RoleCount_Wait")
+		util.AddNetworkString("TTT_RoleCount_Wait_Spam")
+		util.AddNetworkString("TTT_RoleCount_Spectate")
 		util.AddNetworkString("TTT_RoleCount_Leave")
 
 		local ChatCommands = {
@@ -18,63 +18,103 @@ hook.Add("PostGamemodeLoaded", "TTTInitRoleCounter", function() if (GAMEMODE_NAM
 			"roles"
 		}
 
-		local roles = {} -- keep track of the current role distribution
+		local plyInRound = {} -- the players that were active at round start
 
-		hook.Add("TTTBeginRound", "TTT_RoleCount_Start", function()
+		local spamProtection = {}
+		local waitTime = 20 -- time before one of the chat commands can be used again
+
+		local function WriteRoleDistribution()
+			local roles = {}
 			roles[ROLE_INNOCENT] = 0
 			roles[ROLE_DETECTIVE] = 0
 			roles[ROLE_TRAITOR] = 0
-			roles[ROLE_SPECTATOR] = 0
-
-			roundOver = false
 
 			local role
+			for _, ply in pairs(plyInRound) do
+				role = ply:GetRole()
+				roles[role] = roles[role] + 1
+			end
+
+			net.WriteUInt(roles[ROLE_INNOCENT], 6)
+			net.WriteUInt(roles[ROLE_DETECTIVE], 6)
+			net.WriteUInt(roles[ROLE_TRAITOR], 6)
+		end
+
+		hook.Add("TTTBeginRound", "TTT_RoleCount_Start", function()
+			spamProtection = {}
+			plyInRound = {}
+			local spectators = 0
+
 			for _, ply in pairs(player.GetAll()) do
 				if (!ply:IsSpec()) then
-					role = ply:GetRole()
-					roles[role] = roles[role] + 1
+					plyInRound[ply:EntIndex()] = ply
 				else
-					roles[ROLE_SPECTATOR] = roles[ROLE_SPECTATOR] + 1
+					spectators = spectators + 1
 				end
 			end
 
 			net.Start("TTT_RoleCount_Start")
-				net.WriteUInt(roles[ROLE_INNOCENT], 8)
-				net.WriteUInt(roles[ROLE_DETECTIVE], 8)
-				net.WriteUInt(roles[ROLE_TRAITOR], 8)
-				net.WriteUInt(roles[ROLE_SPECTATOR], 8)
+				WriteRoleDistribution()
+				net.WriteUInt(spectators, 6)
 			net.Broadcast()
 		end)
 
 		hook.Add("PlayerSay", "TTT_RoleCount_Say", function(ply, text)
 			if (table.HasValue(ChatCommands, string.lower(text))) then
 				if (GetRoundState() == ROUND_ACTIVE) then
-					net.Start("TTT_RoleCount_Say")
-						net.WriteUInt(roles[ROLE_INNOCENT], 8)
-						net.WriteUInt(roles[ROLE_DETECTIVE], 8)
-						net.WriteUInt(roles[ROLE_TRAITOR], 8)
-					net.Send(ply)
+					local index = ply:EntIndex()
+					local CurTime = CurTime()
+					if (spamProtection[index] == nil or spamProtection[index] <= CurTime) then
+						spamProtection[index] = CurTime + waitTime
+
+						net.Start("TTT_RoleCount_Say")
+							WriteRoleDistribution()
+					else
+						net.Start("TTT_RoleCount_Wait_Spam")
+					end
 				else
 					net.Start("TTT_RoleCount_Wait")
-					net.Send(ply)
 				end
+				net.Send(ply)
 
 				return ""
 			end
 		end)
 
+		local nextCheck = 0
+		hook.Add("Think", "TTT_CheckForceSpectator", function()
+			if (nextCheck <= CurTime() and GetRoundState() == ROUND_ACTIVE) then
+				nextCheck = CurTime() + 2 -- only check all 2 seconds
+				for _, ply in pairs(player.GetAll()) do
+					if (ply:GetForceSpec()) then
+						local index = ply:EntIndex()
+						if (plyInRound[index] != nil) then
+							plyInRound[index] = nil
+
+							net.Start("TTT_RoleCount_Spectate")
+								net.WriteUInt(ply:GetRole(), 3)
+							net.Broadcast()
+						end
+					end
+				end
+			end
+		end)
+
 		hook.Add("PlayerDisconnected", "TTT_RoleCount_Leave", function(ply)
 			if (GetRoundState() == ROUND_ACTIVE) then
-				local role = ply:GetRole()
-				roles[role] = roles[role] - 1
+				local index = ply:EntIndex()
+				if (plyInRound[index] != nil) then
+					plyInRound[index] = nil
 
-				net.Start("TTT_RoleCount_Leave")
-					net.WriteUInt(role, 4)
-					net.WriteBool(ply:Alive())
-				net.Broadcast()
+					net.Start("TTT_RoleCount_Leave")
+						net.WriteUInt(ply:GetRole(), 3)
+						net.WriteBool(ply:Alive())
+					net.Broadcast()
+				end
 			end
 		end)
 	else
+		local ROLE_SPECTATOR = 3
 		-- save colors and strings for easy access
 		local roles = {
 			[ROLE_INNOCENT] = {string = " innocent", color = Color(0, 255, 0, 255)},
@@ -84,10 +124,10 @@ hook.Add("PostGamemodeLoaded", "TTTInitRoleCounter", function() if (GAMEMODE_NAM
 		}
 
 		net.Receive("TTT_RoleCount_Start", function()
-			local innocents = net.ReadUInt(8)
-			local detectives = net.ReadUInt(8)
-			local traitors = net.ReadUInt(8)
-			local spectators = net.ReadUInt(8)
+			local innocents = net.ReadUInt(6)
+			local detectives = net.ReadUInt(6)
+			local traitors = net.ReadUInt(6)
+			local spectators = net.ReadUInt(6)
 
 			chat.AddText(
 				color_white, "There are ",
@@ -113,9 +153,9 @@ hook.Add("PostGamemodeLoaded", "TTTInitRoleCounter", function() if (GAMEMODE_NAM
 		end)
 
 		net.Receive("TTT_RoleCount_Say", function()
-			local innocents = net.ReadUInt(8)
-			local detectives = net.ReadUInt(8)
-			local traitors = net.ReadUInt(8)
+			local innocents = net.ReadUInt(6)
+			local detectives = net.ReadUInt(6)
+			local traitors = net.ReadUInt(6)
 
 			chat.AddText(
 				color_white, "There are currently ",
@@ -128,28 +168,26 @@ hook.Add("PostGamemodeLoaded", "TTTInitRoleCounter", function() if (GAMEMODE_NAM
 			)
 		end)
 
+		net.Receive("TTT_RoleCount_Wait_Spam", function()
+			chat.AddText(color_white, "Please wait a few seconds before you request the role distribution again.")
+		end)
+
 		net.Receive("TTT_RoleCount_Wait", function()
 			chat.AddText(color_white, "Please wait until the round has started.")
 		end)
 
-		net.Receive("TTT_RoleCount_Leave", function()
-			local role = net.ReadUInt(4)
-			local alive = net.ReadBool()
-
+		local function PrintToChat(role, alive, endtext)
 			local starttext = "A"
 			if (role == ROLE_INNOCENT) then
 				starttext = starttext.."n"
 			end
 
-			local endtext = " has left the server, "
-			if (alive) then
-				-- special case for a living innocent, which could also be a spectator already
-				if (role == ROLE_INNOCENT) then
-					endtext = " or a spectator" .. endtext .. "however "
+			if (alive != nil) then
+				if (alive) then
+					endtext = endtext .. "he was still alive."
+				else
+					endtext = endtext .. "he was already dead."
 				end
-				endtext = endtext .. "he was still alive."
-			else
-				endtext = endtext .. "he was already dead."
 			end
 
 			chat.AddText(
@@ -157,6 +195,14 @@ hook.Add("PostGamemodeLoaded", "TTTInitRoleCounter", function() if (GAMEMODE_NAM
 				roles[role].color, roles[role].string,
 				color_white, endtext
 			)
+		end
+
+		net.Receive("TTT_RoleCount_Spectate", function()
+			PrintToChat(net.ReadUInt(3), nil, " has switched to the spectators.")
+		end)
+
+		net.Receive("TTT_RoleCount_Leave", function()
+			PrintToChat(net.ReadUInt(3), net.ReadBool(), " has left the server, ")
 		end)
 	end
 end end)

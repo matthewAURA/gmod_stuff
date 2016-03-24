@@ -13,7 +13,7 @@ end
 if SERVER then
 	AddCSLuaFile()
 	resource.AddWorkshop("253737047")
-elseif CLIENT then
+else
 	SWEP.PrintName = "Golden Deagle"
 	if TTT then
 		SWEP.Slot = 6
@@ -70,7 +70,7 @@ SWEP.ViewModelFOV = 72
 SWEP.ViewModel = Model("models/weapons/zaratusa/powerdeagle/v_powerdeagle.mdl")
 SWEP.WorldModel = Model("models/weapons/zaratusa/powerdeagle/w_powerdeagle.mdl")
 
-SWEP.IronSightsPos = Vector(1.1, 0.6, 2.55)
+SWEP.IronSightsPos = Vector(1.1, 0.6, 0.7)
 SWEP.IronSightsAng = Vector(0, 0, 75)
 
 --- TTT config values ---
@@ -108,53 +108,76 @@ function SWEP:Precache()
 	util.PrecacheSound("Golden_Deagle.Single")
 end
 
+function SWEP:Initialize()
+	if (CLIENT and self:Clip1() == -1) then
+		self:SetClip1(self.Primary.DefaultClip)
+	elseif (SERVER) then
+		self.shotsFired = 0
+		if TTT then
+			self.fingerprints = {}
+			self:SetIronsights(false)
+		end
+	end
+
+	self:SetDeploySpeed(self.DeploySpeed)
+
+	if (self.SetHoldType) then
+		self:SetHoldType(self.HoldType or "pistol")
+	end
+end
+
 function SWEP:PrimaryAttack()
 	if (self:CanPrimaryAttack()) then
 		self:SetNextPrimaryFire(CurTime() + self.Primary.Delay)
 		self:SetNextSecondaryFire(CurTime() + self.Primary.Delay)
 
+		local owner = self.Owner
+		owner:GetViewModel():StopParticles()
+
 		self:SendWeaponAnim(ACT_VM_PRIMARYATTACK)
-		self.Owner:MuzzleFlash()
-		self.Owner:SetAnimation(PLAYER_ATTACK1)
+
 		if SERVER then
-			sound.Play(self.Primary.Sound, self:GetPos(), self.Primary.SoundLevel)
+			sound.Play(self.Primary.Sound, self:GetPos())
+			self.shotsFired = self.shotsFired + 1
+
+			local owner = self.Owner
+			local title = "HandleGoldenDeagle" .. self:EntIndex() .. self.shotsFired
+
+			hook.Add("EntityTakeDamage", title, function(ent, dmginfo)
+				if (IsValid(ent) and ent:IsPlayer() and dmginfo:IsBulletDamage() and dmginfo:GetAttacker():GetActiveWeapon() == self) then
+					if (ent:IsRole(ROLE_INNOCENT) or ent:IsRole(ROLE_DETECTIVE)) then
+						local newdmg = DamageInfo()
+						newdmg:SetDamage(1000)
+						newdmg:SetAttacker(owner)
+						newdmg:SetInflictor(self.Weapon)
+						newdmg:SetDamageType(DMG_BULLET)
+						newdmg:SetDamagePosition(owner:GetPos())
+
+						hook.Remove("EntityTakeDamage", title) -- remove hook before applying new damage
+						owner:TakeDamageInfo(newdmg)
+						return true -- block all damage
+					elseif (ent:IsRole(ROLE_TRAITOR)) then
+						hook.Remove("EntityTakeDamage", title)
+						dmginfo:ScaleDamage(100) -- should always be deadly
+					end
+				end
+			end)
+
+			timer.Simple(1, function() hook.Remove("EntityTakeDamage", title) end) -- wait 1 seconds for the damage
 		end
 
-		local owner = self.Owner
-		local tr = util.TraceLine(util.GetPlayerTrace(owner))
-
-		if (SERVER and tr.Entity:IsPlayer() and (tr.Entity:IsRole(ROLE_INNOCENT) or tr.Entity:IsRole(ROLE_DETECTIVE))) then
-			local dmginfo = DamageInfo()
-			dmginfo:SetDamage(1000)
-			dmginfo:SetAttacker(owner)
-			dmginfo:SetInflictor(self)
-			dmginfo:SetDamageType(DMG_BULLET)
-			dmginfo:SetDamagePosition(owner:GetPos())
-
-			owner:TakeDamageInfo(dmginfo)
-		else
-			local bullet = {}
-			bullet.Attacker = owner
-			bullet.Num = self.Primary.NumberofShots
-			bullet.Src = owner:GetShootPos()
-			bullet.Dir = owner:GetAimVector()
-			bullet.AmmoType = self.Primary.Ammo
-
-			if (tr.Entity:IsPlayer() and tr.Entity:IsRole(ROLE_TRAITOR)) then
-				bullet.Force = 1000
-				bullet.Damage = 1000
-			else
-				bullet.Damage = self.Primary.Damage
-				bullet.Spread = Vector(self.Primary.Cone, self.Primary.Cone, 0)
-			end
-
-			self:FireBullets(bullet)
+		if TTT then
+			self:ShootBullet(self.Primary.Damage, self.Primary.Recoil, self.Primary.NumShots, self:GetPrimaryCone())
+		elseif SB then
+			self:ShootBullet(self.Primary.Damage, self.Primary.NumShots, self.Primary.Cone)
 		end
 		self:TakePrimaryAmmo(1)
 
 		if (IsValid(owner) and !owner:IsNPC() and owner.ViewPunch) then
 			owner:ViewPunch(Angle(math.Rand(-0.2,-0.1) * self.Primary.Recoil, math.Rand(-0.1,0.1) * self.Primary.Recoil, 0))
 		end
+
+		timer.Simple(0.5, function() if (IsValid(self) and IsValid(self.Owner)) then ParticleEffectAttach("smoke_trail", PATTACH_POINT_FOLLOW, self.Owner:GetViewModel(), 1) end end)
 	end
 end
 

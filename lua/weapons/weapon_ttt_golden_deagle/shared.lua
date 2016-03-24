@@ -5,7 +5,7 @@ SWEP.Contact = "http://steamcommunity.com/profiles/76561198032479768"
 if SERVER then
 	AddCSLuaFile()
 	resource.AddWorkshop("637848943")
-elseif CLIENT then
+else
 	SWEP.PrintName = "Golden Deagle"
 	SWEP.Slot = 6
 	SWEP.Icon = "vgui/ttt/icon_golden_deagle"
@@ -24,7 +24,7 @@ SWEP.Base = "weapon_tttbase"
 SWEP.Primary.Ammo = "none"
 SWEP.Primary.Delay = 0.6
 SWEP.Primary.Recoil = 6
-SWEP.Primary.Cone = 0.02
+SWEP.Primary.Cone = 0
 SWEP.Primary.Damage = 37
 SWEP.Primary.Automatic = false
 SWEP.Primary.ClipSize = 2
@@ -40,8 +40,8 @@ SWEP.ViewModelFOV = 85
 SWEP.ViewModel = Model("models/weapons/zaratusa/golden_deagle/v_golden_deagle.mdl")
 SWEP.WorldModel = Model("models/weapons/zaratusa/golden_deagle/w_golden_deagle.mdl")
 
-SWEP.IronSightsPos = Vector(3.76, -0.5, 3.67)
-SWEP.IronSightsAng = Vector(-0.75, 0.06, 0)
+SWEP.IronSightsPos = Vector(3.76, -0.5, 1.67)
+SWEP.IronSightsAng = Vector(-0.6, 0, 0)
 
 --- TTT config values ---
 
@@ -77,6 +77,7 @@ function SWEP:Initialize()
 	if (CLIENT and self:Clip1() == -1) then
 		self:SetClip1(self.Primary.DefaultClip)
 	elseif (SERVER) then
+		self.shotsFired = 0
 		self.fingerprints = {}
 		self:SetIronsights(false)
 	end
@@ -90,7 +91,7 @@ function SWEP:Initialize()
 	PrecacheParticleSystem("smoke_trail")
 end
 
-function SWEP:PrimaryAttack(worldsnd)
+function SWEP:PrimaryAttack()
 	if (self:CanPrimaryAttack()) then
 		self:SetNextPrimaryFire(CurTime() + self.Primary.Delay)
 		self:SetNextSecondaryFire(CurTime() + self.Primary.Delay)
@@ -99,43 +100,38 @@ function SWEP:PrimaryAttack(worldsnd)
 		owner:GetViewModel():StopParticles()
 
 		self:SendWeaponAnim(ACT_VM_PRIMARYATTACK)
-		self.Owner:MuzzleFlash()
-		self.Owner:SetAnimation(PLAYER_ATTACK1)
-		if (!worldsnd) then
-			self.Weapon:EmitSound(self.Primary.Sound)
-		elseif SERVER then
+
+		if SERVER then
 			sound.Play(self.Primary.Sound, self:GetPos())
+			self.shotsFired = self.shotsFired + 1
+
+			local owner = self.Owner
+			local title = "HandleGoldenDeagle" .. self:EntIndex() .. self.shotsFired
+
+			hook.Add("EntityTakeDamage", title, function(ent, dmginfo)
+				if (IsValid(ent) and ent:IsPlayer() and dmginfo:IsBulletDamage() and dmginfo:GetAttacker():GetActiveWeapon() == self) then
+					if (ent:IsRole(ROLE_INNOCENT) or ent:IsRole(ROLE_DETECTIVE)) then
+						local newdmg = DamageInfo()
+						newdmg:SetDamage(1000)
+						newdmg:SetAttacker(owner)
+						newdmg:SetInflictor(self.Weapon)
+						newdmg:SetDamageType(DMG_BULLET)
+						newdmg:SetDamagePosition(owner:GetPos())
+
+						hook.Remove("EntityTakeDamage", title) -- remove hook before applying new damage
+						owner:TakeDamageInfo(newdmg)
+						return true -- block all damage
+					elseif (ent:IsRole(ROLE_TRAITOR)) then
+						hook.Remove("EntityTakeDamage", title)
+						dmginfo:ScaleDamage(100) -- should always be deadly
+					end
+				end
+			end)
+
+			timer.Simple(1, function() hook.Remove("EntityTakeDamage", title) end) -- wait 1 seconds for the damage
 		end
 
-		local tr = util.TraceLine(util.GetPlayerTrace(owner))
-
-		if (SERVER and tr.Entity:IsPlayer() and (tr.Entity:IsRole(ROLE_INNOCENT) or tr.Entity:IsRole(ROLE_DETECTIVE))) then
-			local dmginfo = DamageInfo()
-			dmginfo:SetDamage(1000)
-			dmginfo:SetAttacker(owner)
-			dmginfo:SetInflictor(self)
-			dmginfo:SetDamageType(DMG_BULLET)
-			dmginfo:SetDamagePosition(owner:GetPos())
-
-			owner:TakeDamageInfo(dmginfo)
-		else
-			local bullet = {}
-			bullet.Attacker = owner
-			bullet.Num = self.Primary.NumberofShots
-			bullet.Src = owner:GetShootPos()
-			bullet.Dir = owner:GetAimVector()
-			bullet.AmmoType = self.Primary.Ammo
-
-			if (tr.Entity:IsPlayer() and tr.Entity:IsRole(ROLE_TRAITOR)) then
-				bullet.Force = 1000
-				bullet.Damage = 1000
-			else
-				bullet.Damage = self.Primary.Damage
-				bullet.Spread = Vector(self.Primary.Cone, self.Primary.Cone, 0)
-			end
-
-			self:FireBullets(bullet)
-		end
+		self:ShootBullet(self.Primary.Damage, self.Primary.Recoil, self.Primary.NumShots, self:GetPrimaryCone())
 		self:TakePrimaryAmmo(1)
 
 		if (IsValid(owner) and !owner:IsNPC() and owner.ViewPunch) then
