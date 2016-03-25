@@ -1,4 +1,5 @@
-# Garry's Mod Stuff
-This repo consists of the source code for my Garry's Mod Weapons and Stuff.
+# TTT Config
 
-All changes will be pushed to this repo.
+Lua files for a custom Trouble in Terrorist Town flavour.
+
+Includes the base set of TTT config and Zaratusa's TTT addons.
