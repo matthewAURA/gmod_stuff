@@ -10,17 +10,13 @@ SWEP.EquipMenuData = {
 	desc = "A Mine which can be manually detonated\nor sticked on a wall as a tripmine.\n\nNOTE: Can be shot and destroyed by everyone."
 }
 
-local hudtext = {
-	{text="Primary fire to deploy.", font="TabLarge", xalign=TEXT_ALIGN_RIGHT},
-	{text="Secondary fire to detonate.", font="TabLarge", xalign=TEXT_ALIGN_RIGHT},
-}
-
+local x = ScrW() / 2.0
+local y = ScrH() * 0.995
 function SWEP:DrawHUD()
-	local x = ScrW() - 40
-	hudtext[1].pos = {x, ScrH() - 80}
-	draw.TextShadow(hudtext[1], 2)
-	hudtext[2].pos = {x, ScrH() - 40}
-	draw.TextShadow(hudtext[2], 2)
+	draw.SimpleText("Primary attack to deploy.", "Default", x, y - 20, COLOR_WHITE, TEXT_ALIGN_CENTER, TEXT_ALIGN_BOTTOM)
+	draw.SimpleText("Secondary attack to detonate.", "Default", x, y, COLOR_WHITE, TEXT_ALIGN_CENTER, TEXT_ALIGN_BOTTOM)
+
+	return self.BaseClass.DrawHUD(self)
 end
 
 function SWEP:OnRemove()

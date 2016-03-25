@@ -146,7 +146,7 @@ hook.Add("PostGamemodeLoaded", "TTTInitRoleCounter", function() if (GAMEMODE_NAM
 				)
 			else
 				chat.AddText(
-					COLOR_YELLOW, "1 player",
+					roles[ROLE_SPECTATOR].color, "1 player",
 					color_white, " is spectating the Trouble in this Terrorist Town."
 				)
 			end

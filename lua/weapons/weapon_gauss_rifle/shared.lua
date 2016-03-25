@@ -40,8 +40,8 @@ SWEP.ViewModelFOV = 64
 SWEP.ViewModel = Model("models/weapons/zaratusa/gauss_rifle/v_gauss_rifle.mdl")
 SWEP.WorldModel = Model("models/weapons/zaratusa/gauss_rifle/w_gauss_rifle.mdl")
 
-SWEP.IronSightsPos = Vector(5, -15, -2)
-SWEP.IronSightsAng = Vector(2.6, 1.37, 3.5)
+SWEP.IronSightsPos = Vector(-1.55, -22, 0)
+SWEP.IronSightsAng = Vector(0, 0, 0)
 
 function SWEP:SetupDataTables()
 	self:NetworkVar("Bool", 0, "Ironsights")

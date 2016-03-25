@@ -1,0 +1,6 @@
+VertexLitGeneric
+{
+"$basetexture" "models/player/raccoon_city/beltwayeyesA"
+  //      "$envmap" 			"env_cubemap"
+"$Selfillum" "1"
+} 

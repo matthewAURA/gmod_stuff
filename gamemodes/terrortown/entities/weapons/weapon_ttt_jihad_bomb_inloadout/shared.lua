@@ -4,7 +4,7 @@ SWEP.Contact = "http://steamcommunity.com/profiles/76561198032479768"
 
 if SERVER then
 	AddCSLuaFile()
-	resource.AddWorkshop("634300198")
+	resource.AddWorkshop("254177214")
 else
 	SWEP.PrintName = "Jihad Bomb"
 	SWEP.Slot = 8
@@ -48,12 +48,9 @@ SWEP.Kind = WEAPON_ROLE
 -- then this gun can be spawned as a random weapon.
 SWEP.AutoSpawnable = false
 
--- CanBuy is a table of ROLE_* entries like ROLE_TRAITOR and ROLE_DETECTIVE. If
--- a role is in this table, those players can buy this.
-SWEP.CanBuy = { ROLE_TRAITOR }
-
--- If LimitedStock is true, you can only buy one per round.
-SWEP.LimitedStock = true
+-- InLoadoutFor is a table of ROLE_* entries that specifies which roles should
+-- receive this weapon as soon as the round starts.
+SWEP.InLoadoutFor = { ROLE_TRAITOR }
 
 -- If AllowDrop is false, players can't manually drop the gun with Q
 SWEP.AllowDrop = true
@@ -100,13 +97,12 @@ end
 
 -- Checks if the burn time is over, or if the body is in water
 local function RunIgniteTimer(tname, body, burn_destroy)
-	if (IsValid(body)) then
+	if (IsValid(body) and body:IsOnFire()) then
 		if (CurTime() > burn_destroy) then
 			body:SetNotSolid(true)
 			body:Remove()
 		elseif (body:WaterLevel() > 0) then
 			body:Extinguish()
-			timer.Destroy(tname)
 		end
 	else
 		timer.Destroy(tname)
@@ -148,7 +144,6 @@ function SWEP:PrimaryAttack()
 	util.Effect("Sparks", effectdata)
 	self.BaseClass.ShootEffects(self)
 
-
 	-- The rest is only done on the server
 	if SERVER then
 		local owner = self.Owner
@@ -187,6 +182,11 @@ function SWEP:Explode()
 	effect:SetRadius(r_outer)
 	effect:SetMagnitude(dmg)
 	util.Effect("Explosion", effect, true, true)
+
+	-- make sure the owner dies anyway
+	if (IsValid(dmgowner)) then
+		dmgowner:Kill()
+	end
 
 	self:Remove()
 	BurnOwnersBody(model)

@@ -17,8 +17,8 @@ function ENT:Think()
 			for _, ent in ipairs(ents.FindInSphere(self:GetPos(), self.ScanRadius)) do
 				if (IsValid(ent) and ent:IsPlayer() and !ent:IsSpec()) then
 					-- check if the target is visible
-					local spos = self:GetPos()
-					local epos = ent:GetPos()
+					local spos = self:GetPos() + Vector(0, 0, 5) -- let it work a bit better on steps, but then it doesn't work so good at ceilings
+					local epos = ent:GetPos() + Vector(0, 0, 5) -- let it work a bit better on steps, but then it doesn't work so good at ceilings
 
 					local tr = util.TraceLine({start=spos, endpos=epos, filter=self, mask=MASK_SOLID})
 					if (!tr.HitWorld and IsValid(tr.Entity) and !table.HasValue(validDoors, tr.Entity:GetClass()) and ent:Alive()) then

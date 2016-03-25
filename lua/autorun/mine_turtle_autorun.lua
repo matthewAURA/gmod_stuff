@@ -9,14 +9,17 @@ if SERVER then
 	}
 
 	hook.Add("Initialize", "TTT_MineTurtleConfigSetup", function()
-		if not file.Exists("ttt_weapons", "DATA") then
-			file.CreateDir("ttt_weapons")
+		if not file.Exists("ttt", "DATA") then
+			file.CreateDir("ttt")
 		end
-		if not file.Exists("ttt_weapons/mine_turtle", "DATA") then
-			file.CreateDir("ttt_weapons/mine_turtle")
+		if not file.Exists("ttt/weapons", "DATA") then
+			file.CreateDir("ttt/weapons")
 		end
-		if not file.Exists("ttt_weapons/mine_turtle/config.txt", "DATA") then
-			file.Write("ttt_weapons/mine_turtle/config.txt", util.TableToJSON(cfg))
+		if not file.Exists("ttt/weapons/mine_turtle", "DATA") then
+			file.CreateDir("ttt/weapons/mine_turtle")
+		end
+		if not file.Exists("ttt/weapons/mine_turtle/config.txt", "DATA") then
+			file.Write("ttt/weapons/mine_turtle/config.txt", util.TableToJSON(cfg))
 		end
 	end)
 else

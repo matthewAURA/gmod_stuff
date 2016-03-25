@@ -1,0 +1,5 @@
+VertexLitGeneric
+{
+"$basetexture" "models/player/raccoon_city/beltwaygear"
+$bumpmap "models/player/raccoon_city/beltwaygear_n"
+}

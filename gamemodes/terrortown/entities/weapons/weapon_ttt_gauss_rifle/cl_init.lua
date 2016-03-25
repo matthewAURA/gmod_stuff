@@ -1,6 +1,6 @@
 include('shared.lua')
 
-SWEP.PrintName = "Gauss Rifle"
+SWEP.PrintName = "M2014 Gauss"
 SWEP.Slot = 6
 SWEP.Icon = "vgui/ttt/icon_gauss_rifle"
 

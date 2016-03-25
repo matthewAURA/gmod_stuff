@@ -3,8 +3,8 @@ SWEP.Author = "Zaratusa"
 SWEP.Contact = "http://steamcommunity.com/profiles/76561198032479768"
 
 local cfg = { }
-if file.Exists("ttt_weapons/mine_turtle/config.txt", "DATA") then
-	cfg = util.JSONToTable(file.Read("ttt_weapons/mine_turtle/config.txt", "DATA"))
+if file.Exists("ttt/weapons/mine_turtle/config.txt", "DATA") then
+	cfg = util.JSONToTable(file.Read("ttt/weapons/mine_turtle/config.txt", "DATA"))
 end
 
 -- Always derive from weapon_tttbase

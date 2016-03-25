@@ -1,6 +1,6 @@
 include('shared.lua')
 
-SWEP.PrintName = "Gauss Rifle"
+SWEP.PrintName = "M2014 Gauss"
 SWEP.Slot = 4
 
 -- Draw the scope on the HUD
