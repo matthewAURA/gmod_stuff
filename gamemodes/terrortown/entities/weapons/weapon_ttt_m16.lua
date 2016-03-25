@@ -16,14 +16,14 @@ SWEP.Spawnable = true
 SWEP.Kind = WEAPON_HEAVY
 SWEP.WeaponID = AMMO_M16
 
-SWEP.Primary.Delay			= 0.19
+SWEP.Primary.Delay			= 0.12
 SWEP.Primary.Recoil			= 1.6
 SWEP.Primary.Automatic = true
 SWEP.Primary.Ammo = "Pistol"
 SWEP.Primary.Damage = 23
 SWEP.Primary.Cone = 0.018
-SWEP.Primary.ClipSize = 20
-SWEP.Primary.ClipMax = 60
+SWEP.Primary.ClipSize = 30
+SWEP.Primary.ClipMax = 90
 SWEP.Primary.DefaultClip = 20
 SWEP.AutoSpawnable      = true
 SWEP.AmmoEnt = "item_ammo_pistol_ttt"
