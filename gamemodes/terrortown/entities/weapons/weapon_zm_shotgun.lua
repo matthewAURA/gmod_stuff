@@ -19,12 +19,12 @@ SWEP.Kind = WEAPON_HEAVY
 SWEP.WeaponID = AMMO_SHOTGUN
 
 SWEP.Primary.Ammo = "Buckshot"
-SWEP.Primary.Damage = 11
+SWEP.Primary.Damage = 5
 SWEP.Primary.Cone = 0.085
-SWEP.Primary.Delay = 0.8
-SWEP.Primary.ClipSize = 8
-SWEP.Primary.ClipMax = 24
-SWEP.Primary.DefaultClip = 8
+SWEP.Primary.Delay = 0.4
+SWEP.Primary.ClipSize = 12
+SWEP.Primary.ClipMax = 36
+SWEP.Primary.DefaultClip = 12
 SWEP.Primary.Automatic = true
 SWEP.Primary.NumShots = 8
 SWEP.AutoSpawnable      = true
