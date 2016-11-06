@@ -92,11 +92,13 @@ function SWEP:Initialize()
 end
 
 function SWEP:PrimaryAttack()
-	if (self:CanPrimaryAttack()) then
+	local owner = self.Owner
+
+	if (self:CanPrimaryAttack() and owner:IsRole(ROLE_DETECTIVE)) then
 		self:SetNextPrimaryFire(CurTime() + self.Primary.Delay)
 		self:SetNextSecondaryFire(CurTime() + self.Primary.Delay)
 
-		local owner = self.Owner
+
 		owner:GetViewModel():StopParticles()
 
 		self:SendWeaponAnim(ACT_VM_PRIMARYATTACK)
